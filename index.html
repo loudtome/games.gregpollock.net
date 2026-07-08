@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Games - Greg Pollock</title>
+    <meta name="description" content="A collection of interactive browser games that are a delightful mixture of stupid, smart, and funny.">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://games.gregpollock.net/">
+    <meta property="og:title" content="Games - Greg Pollock">
+    <meta property="og:description" content="A collection of interactive browser games that are a delightful mixture of stupid, smart, and funny.">
+    <meta property="og:image" content="https://games.gregpollock.net/preview.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://games.gregpollock.net/">
+    <meta property="twitter:title" content="Games - Greg Pollock">
+    <meta property="twitter:description" content="A collection of interactive browser games that are a delightful mixture of stupid, smart, and funny.">
+    <meta property="twitter:image" content="https://games.gregpollock.net/preview.png">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Please enjoy my games</h1>
+            <p class="subtitle">I hope you find them to be a delightful mixture of stupid, smart, and funny.</p>
+        </div>
+
+        <div class="games-grid">
+            <a href="/significance-guesser/" class="game-tile">
+                <div class="game-image">
+                    <svg class="chart-preview" viewBox="0 0 420 220" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Background -->
+                        <rect width="420" height="220" fill="#fdfbf7"/>
+
+                        <!-- Grid lines -->
+                        <line x1="30" y1="40" x2="390" y2="40" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+                        <line x1="30" y1="75" x2="390" y2="75" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+                        <line x1="30" y1="110" x2="390" y2="110" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+                        <line x1="30" y1="145" x2="390" y2="145" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+                        <line x1="30" y1="180" x2="390" y2="180" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+
+                        <!-- Null Hypothesis line (red) -->
+                        <line x1="30" y1="130" x2="390" y2="130" stroke="#ef4444" stroke-width="2.5" opacity="0.9"/>
+
+                        <!-- 95% Confidence Band (gray dashed) -->
+                        <line x1="30" y1="145" x2="390" y2="65" stroke="rgba(156,163,175,0.6)" stroke-width="1.5" stroke-dasharray="4,3"/>
+                        <line x1="30" y1="155" x2="390" y2="85" stroke="rgba(156,163,175,0.6)" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+                        <!-- Bars (dark blue) -->
+                        <rect x="35" y="110" width="18" height="70" fill="rgba(61,90,128,0.95)"/>
+                        <rect x="58" y="125" width="18" height="55" fill="rgba(61,90,128,0.95)"/>
+                        <rect x="81" y="120" width="18" height="60" fill="rgba(61,90,128,0.95)"/>
+                        <rect x="104" y="100" width="18" height="80" fill="rgba(61,90,128,0.95)"/>
+                        <rect x="127" y="115" width="18" height="65" fill="rgba(61,90,128,0.95)"/>
+                        <rect x="150" y="118" width="18" height="62" fill="rgba(61,90,128,0.95)"/>
+                        <rect x="173" y="122" width="18" height="58" fill="rgba(61,90,128,0.95)"/>
+                        <rect x="196" y="125" width="18" height="55" fill="rgba(61,90,128,0.95)"/>
+                        <rect x="219" y="108" width="18" height="72" fill="rgba(61,90,128,0.95)"/>
+                        <rect x="242" y="110" width="18" height="70" fill="rgba(61,90,128,0.95)"/>
+                        <rect x="265" y="180" width="18" height="0" fill="rgba(61,90,128,0.95)"/>
+                        <rect x="288" y="125" width="18" height="55" fill="rgba(61,90,128,0.95)"/>
+                        <rect x="311" y="108" width="18" height="72" fill="rgba(61,90,128,0.95)"/>
+                        <rect x="334" y="135" width="18" height="45" fill="rgba(61,90,128,0.95)"/>
+                        <rect x="357" y="55" width="18" height="125" fill="rgba(61,90,128,0.95)"/>
+                        <rect x="380" y="95" width="18" height="85" fill="rgba(61,90,128,0.95)"/>
+
+                        <!-- Fitted Regression Line (green) -->
+                        <line x1="30" y1="150" x2="390" y2="75" stroke="#10b981" stroke-width="2.5" opacity="0.9"/>
+                    </svg>
+                </div>
+                <div class="game-content">
+                    <h2 class="game-title">Statistical Significance Guesser</h2>
+                    <p class="game-description">Test your intuition for statistical significance. Look at monthly trend charts and guess whether the pattern is real or just random noise.</p>
+                </div>
+            </a>
+
+            <a href="/pl8-pzl/" class="game-tile">
+                <div class="game-image">
+                    <img class="chart-preview" src="/pl8-pzl/preview.png" alt="PL8 PZL — a license plate reading SRFGLCA">
+                </div>
+                <div class="game-content">
+                    <h2 class="game-title">PL8 PZL</h2>
+                    <p class="game-description">Every vanity plate compresses a phrase. Pick a plate, then the three symbols whose combination names its parts.</p>
+                </div>
+            </a>
+
+            <a href="/false-flags/" class="game-tile">
+                <div class="game-image">
+                    <svg class="chart-preview" viewBox="0 0 420 220" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="420" height="220" fill="#fdfbf7"/>
+                        <!-- flagpole -->
+                        <line x1="120" y1="30" x2="120" y2="195" stroke="#1e3a5f" stroke-width="5" stroke-linecap="round"/>
+                        <circle cx="120" cy="26" r="6" fill="#f59e0b"/>
+                        <!-- waving flag: three mystery bands -->
+                        <path d="M124 40 Q 200 28 280 40 Q 305 44 300 66 L 300 118 Q 220 132 124 118 Z" fill="#ef4444" opacity="0.85"/>
+                        <path d="M124 66 Q 210 56 300 66 L 300 92 Q 210 102 124 92 Z" fill="#fdfbf7"/>
+                        <path d="M124 92 Q 210 82 300 92 L 300 118 Q 220 132 124 118 Z" fill="#10b981" opacity="0.8"/>
+                        <!-- question mark -->
+                        <text x="196" y="95" font-family="Georgia,serif" font-size="44" font-weight="bold" fill="#1e3a5f">?</text>
+                        <!-- ground -->
+                        <line x1="90" y1="195" x2="150" y2="195" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="game-content">
+                    <h2 class="game-title">False Flags</h2>
+                    <p class="game-description">An AI invents a fictitious flag for a real country, encoding three fun facts as flag symbolism. Guess the country from four options.</p>
+                </div>
+            </a>
+
+            <a href="/llm-playground/" class="game-tile">
+                <div class="game-image">
+                    <svg class="chart-preview" viewBox="0 0 420 220" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Background -->
+                        <rect width="420" height="220" fill="#fdfbf7"/>
+
+                        <!-- Browser window frame -->
+                        <rect x="40" y="30" width="340" height="160" fill="#f9f7f4" stroke="#1e3a5f" stroke-width="2"/>
+
+                        <!-- Window title bar -->
+                        <rect x="40" y="30" width="340" height="25" fill="#1e3a5f"/>
+                        <circle cx="52" cy="42.5" r="4" fill="#ef4444"/>
+                        <circle cx="65" cy="42.5" r="4" fill="#f59e0b"/>
+                        <circle cx="78" cy="42.5" r="4" fill="#10b981"/>
+
+                        <!-- Prompt input box -->
+                        <rect x="55" y="70" width="310" height="30" fill="white" stroke="#d4cfc7" stroke-width="1.5"/>
+                        <text x="65" y="90" font-family="monospace" font-size="11" fill="#5a5a5a">Once upon a time...</text>
+
+                        <!-- Response bubbles -->
+                        <rect x="55" y="115" width="200" height="20" rx="10" fill="#c17835" opacity="0.8"/>
+                        <rect x="60" y="140" width="250" height="20" rx="10" fill="#c17835" opacity="0.6"/>
+                        <rect x="55" y="165" width="180" height="20" rx="10" fill="#c17835" opacity="0.4"/>
+
+                        <!-- CPU/Processing indicator -->
+                        <circle cx="350" cy="175" r="8" fill="#10b981" opacity="0.8"/>
+                        <path d="M 345 175 L 350 170 L 355 175" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+                        <!-- AI sparkle decoration -->
+                        <text x="90" y="50" font-size="14" fill="white">AI</text>
+                        <path d="M 115 42 L 118 45 M 115 48 L 118 45 M 122 45 L 118 45 M 112 45 L 115 45" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="game-content">
+                    <h2 class="game-title">LLM Playground</h2>
+                    <p class="game-description">Test and interact with large language models running entirely in your browser. Experiment with GPT-2, Phi-3, and other models using transformers.js.</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

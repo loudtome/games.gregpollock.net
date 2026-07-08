@@ -1,0 +1,173 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Source+Sans+3:wght@400;600;700&display=swap');
+
+:root {
+    --primary: #1e3a5f;
+    --primary-light: #f5f7fa;
+    --accent: #c17835;
+    --text-primary: #2c2c2c;
+    --text-secondary: #5a5a5a;
+    --cream: #fdfbf7;
+    --off-white: #f9f7f4;
+    --border: #d4cfc7;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Source Sans 3', -apple-system, sans-serif;
+    background-color: var(--cream);
+    background-image:
+        linear-gradient(rgba(30, 58, 95, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30, 58, 95, 0.02) 1px, transparent 1px);
+    background-size: 20px 20px;
+    color: var(--text-primary);
+    line-height: 1.7;
+    min-height: 100vh;
+    padding: 40px 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: var(--off-white);
+    padding: 60px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+h1 {
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.subtitle {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 32px;
+}
+
+.game-tile {
+    background: var(--cream);
+    border: 2px solid var(--border);
+    padding: 0;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.game-tile:hover {
+    transform: translateX(-4px) translateY(-4px);
+    box-shadow: 8px 8px 0 var(--primary);
+    border-color: var(--primary);
+}
+
+.game-image {
+    background: var(--cream);
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 2px solid var(--border);
+    padding: 10px;
+}
+
+.game-icon {
+    font-size: 5rem;
+    filter: brightness(0) invert(1);
+    opacity: 0.9;
+}
+
+.chart-preview {
+    width: 80%;
+    height: auto;
+    max-width: 400px;
+    max-height: 170px;
+    opacity: 0.95;
+    display: block;
+}
+
+.game-content {
+    padding: 28px;
+}
+
+.game-title {
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 12px;
+    line-height: 1.2;
+}
+
+.game-description {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 40px 32px;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+    }
+
+    .subtitle {
+        font-size: 1.125rem;
+    }
+
+    .games-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    body {
+        padding: 20px 12px;
+    }
+
+    .container {
+        padding: 32px 24px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .header {
+        margin-bottom: 40px;
+    }
+}

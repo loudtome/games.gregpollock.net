@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Playground - Greg Pollock</title>
+    <meta name="description" content="Test and interact with large language models directly in your browser using transformers.js">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://games.gregpollock.net/llm-playground/">
+    <meta property="og:title" content="LLM Playground - Greg Pollock">
+    <meta property="og:description" content="Test and interact with large language models directly in your browser using transformers.js">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://games.gregpollock.net/llm-playground/">
+    <meta property="twitter:title" content="LLM Playground - Greg Pollock">
+    <meta property="twitter:description" content="Test and interact with large language models directly in your browser using transformers.js">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>LLM Playground</h1>
+            <p class="subtitle">Test and interact with language models running entirely in your browser</p>
+        </div>
+
+        <div class="main-content">
+            <div class="controls-section">
+                <div class="control-group">
+                    <label>Select Model</label>
+                    <div class="model-list">
+                        <label class="model-card" id="chrome-ai-card">
+                            <input type="radio" name="model" value="chrome-ai" id="chrome-ai-radio">
+                            <div class="model-info">
+                                <div class="model-name">Chrome Built-in AI (Gemini Nano) <span class="badge" id="chrome-ai-badge">Checking...</span></div>
+                                <div class="model-description">Google's on-device AI model built into Chrome browser</div>
+                                <div class="model-stats">
+                                    <span class="stat"><strong>~3B</strong> parameters</span>
+                                    <span class="stat"><strong>No download</strong> (built-in)</span>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="model-card">
+                            <input type="radio" name="model" value="Xenova/distilgpt2">
+                            <div class="model-info">
+                                <div class="model-name">DistilGPT-2</div>
+                                <div class="model-description">Distilled version of GPT-2, faster and lighter</div>
+                                <div class="model-stats">
+                                    <span class="stat"><strong>82M</strong> parameters</span>
+                                    <span class="stat"><strong>~330MB</strong> download</span>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="model-card">
+                            <input type="radio" name="model" value="Xenova/gpt2">
+                            <div class="model-info">
+                                <div class="model-name">GPT-2</div>
+                                <div class="model-description">OpenAI's classic autoregressive language model</div>
+                                <div class="model-stats">
+                                    <span class="stat"><strong>124M</strong> parameters</span>
+                                    <span class="stat"><strong>~500MB</strong> download</span>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="model-card">
+                            <input type="radio" name="model" value="Xenova/LaMini-Cerebras-590M">
+                            <div class="model-info">
+                                <div class="model-name">LaMini-Cerebras 590M</div>
+                                <div class="model-description">Instruction-tuned model for following prompts and tasks</div>
+                                <div class="model-stats">
+                                    <span class="stat"><strong>590M</strong> parameters</span>
+                                    <span class="stat"><strong>~1.2GB</strong> download</span>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="model-card">
+                            <input type="radio" name="model" value="Xenova/TinyLlama-1.1B-Chat-v1.0">
+                            <div class="model-info">
+                                <div class="model-name">TinyLlama 1.1B Chat</div>
+                                <div class="model-description">Chat-optimized model with strong conversational abilities</div>
+                                <div class="model-stats">
+                                    <span class="stat"><strong>1.1B</strong> parameters</span>
+                                    <span class="stat"><strong>~2.2GB</strong> download</span>
+                                </div>
+                            </div>
+                        </label>
+
+                        <div class="custom-model-section">
+                            <div class="custom-model-header">
+                                <span class="custom-model-icon">+</span>
+                                <span>Add Custom Model</span>
+                            </div>
+                            <div class="custom-model-input-group">
+                                <input
+                                    type="text"
+                                    id="custom-model-url"
+                                    class="custom-model-input"
+                                    placeholder="https://huggingface.co/organization/model-name"
+                                    autocomplete="off"
+                                >
+                                <button id="validate-custom-model" class="btn btn-validate" disabled>
+                                    Validate
+                                </button>
+                            </div>
+                            <div id="custom-model-feedback" class="custom-model-feedback hidden">
+                                <!-- Validation messages appear here -->
+                            </div>
+                        </div>
+
+                        <div id="custom-model-cards"></div>
+                    </div>
+                </div>
+
+                <button id="load-model-btn" class="btn btn-primary" disabled>Load Model</button>
+
+                <div id="loading-status" class="loading-status hidden">
+                    <div class="loading-bar-container">
+                        <div id="loading-bar" class="loading-bar"></div>
+                    </div>
+                    <p id="loading-text" class="loading-text">Initializing...</p>
+                </div>
+            </div>
+
+            <div class="generation-section hidden" id="generation-section">
+                <div id="model-loaded-info" class="model-loaded-info">
+                    <strong>Model ready:</strong> <span id="model-loaded-name"></span>
+                </div>
+
+                <div class="control-group">
+                    <label for="prompt-input">Your Prompt</label>
+                    <textarea id="prompt-input" class="prompt-input" rows="4" placeholder="Enter your prompt here...">Once upon a time</textarea>
+                </div>
+
+                <div class="parameters-grid">
+                    <div class="control-group">
+                        <label for="max-tokens">Max New Tokens: <span id="max-tokens-value">100</span></label>
+                        <input type="range" id="max-tokens" min="10" max="500" value="100" step="10">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="temperature">Temperature: <span id="temperature-value">0.7</span></label>
+                        <input type="range" id="temperature" min="0" max="2" value="0.7" step="0.1">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="top-k">Top-K: <span id="top-k-value">50</span></label>
+                        <input type="range" id="top-k" min="0" max="100" value="50" step="5">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="top-p">Top-P: <span id="top-p-value">0.9</span></label>
+                        <input type="range" id="top-p" min="0" max="1" value="0.9" step="0.05">
+                    </div>
+                </div>
+
+                <button id="generate-btn" class="btn btn-primary">Generate Text</button>
+
+                <div id="generation-status" class="generation-status hidden">
+                    <p>Generating...</p>
+                </div>
+
+                <div class="output-section hidden" id="output-section">
+                    <h3>Generated Text</h3>
+                    <div id="output-text" class="output-text"></div>
+                    <div id="metrics-display" class="metrics-display hidden"></div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>About This Playground</h3>
+                <p>This testing harness uses <a href="https://huggingface.co/docs/transformers.js" target="_blank" rel="noopener">Transformers.js</a> to run language models directly in your browser using WebAssembly and WebGPU. All computation happens locally - no data is sent to any server.</p>
+
+                <h4>Generation Parameters</h4>
+                <ul>
+                    <li><strong>Max New Tokens</strong>: Maximum number of tokens to generate</li>
+                    <li><strong>Temperature</strong>: Controls randomness (higher = more creative, lower = more focused)</li>
+                    <li><strong>Top-K</strong>: Limits sampling to the K most likely next tokens</li>
+                    <li><strong>Top-P</strong>: Nucleus sampling - samples from smallest set of tokens with cumulative probability ≥ P</li>
+                </ul>
+
+                <h4>Chrome Built-in AI Setup</h4>
+                <p><strong>If Chrome AI shows as "Unavailable", follow these steps:</strong></p>
+                <ol>
+                    <li>Use Chrome 127+ (Canary, Dev, or Beta recommended)</li>
+                    <li>Enable flag: <code>chrome://flags/#optimization-guide-on-device-model</code></li>
+                    <li>Enable flag: <code>chrome://flags/#prompt-api-for-gemini-nano</code></li>
+                    <li>Restart Chrome</li>
+                    <li>Visit <code>chrome://components</code> and click "Check for update" on "Optimization Guide On Device Model"</li>
+                    <li>Wait for the model to download (~1.7GB), then reload this page</li>
+                </ol>
+                <p><strong>Platform support:</strong> Windows 10/11, macOS 13+, Linux, ChromeOS (Chromebook Plus). Not available on mobile yet.</p>
+                <p><strong>Debugging:</strong> Open DevTools Console (F12) to see detailed availability status and setup instructions.</p>
+
+                <h4>Performance Tips</h4>
+                <ul>
+                    <li>Chrome Built-in AI is fastest and requires no download</li>
+                    <li>First load of other models may take a while as they're downloaded and cached</li>
+                    <li>Subsequent loads will be much faster thanks to browser caching</li>
+                    <li>For quick testing, start with DistilGPT-2 (smallest download)</li>
+                    <li>TinyLlama offers the best balance of quality and size for chat applications</li>
+                </ul>
+
+                <h4>Memory Management</h4>
+                <ul>
+                    <li><strong>Automatic cleanup:</strong> When switching models, the previous model is automatically disposed from memory</li>
+                    <li><strong>Memory usage:</strong> Loaded models stay in RAM (330MB-2.2GB depending on model)</li>
+                    <li><strong>Refresh to clear:</strong> Reload the page to completely free all memory</li>
+                    <li><strong>Note:</strong> Downloaded model files are cached by your browser for faster subsequent loads</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

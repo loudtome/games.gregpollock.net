@@ -1,0 +1,5 @@
+.DS_Store
+.firebase/
+*.png.tmp
+Screenshot*.png
+firebase-debug.log

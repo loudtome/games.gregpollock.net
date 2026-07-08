@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistical Significance Guesser</title>
+    <meta name="description" content="Good analysts measure statistical significance. Great analysts don't need to.">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://games.gregpollock.net/significance-guesser/">
+    <meta property="og:title" content="Statistical Significance Guesser">
+    <meta property="og:description" content="Good data analysts measure statistical significance. Great analysts don't need to.">
+    <meta property="og:image" content="https://games.gregpollock.net/significance-guesser/preview.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://games.gregpollock.net/significance-guesser/">
+    <meta property="twitter:title" content="Statistical Significance Guesser">
+    <meta property="twitter:description" content="Good data analysts measure statistical significance. Great analysts don't need to.">
+    <meta property="twitter:image" content="https://games.gregpollock.net/significance-guesser/preview.png">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header-row">
+            <div class="title-group">
+                <h1>Statistical Significance Guesser</h1>
+                <p class="subtitle">Is this monthly trend real or just noise? (95% confidence level)</p>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Correct</div>
+                <div class="info-value" id="scoreDisplay">0/0</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="myChart"></canvas>
+        </div>
+
+        <div class="button-container" id="gameControls">
+            <button class="btn-significant" id="btnSignificant">Significant Trend</button>
+            <button class="btn-not-significant" id="btnNotSignificant">Just Noise</button>
+        </div>
+
+        <div class="button-container hidden" id="nextContainer">
+            <button class="btn-next" id="btnNext">Next Round</button>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div class="explanation" id="explanation"></div>
+
+        <div class="final-score" id="finalScore">
+            <div class="score-image-container">
+                <img id="scoreImage" src="" alt="Score result" class="score-image">
+            </div>
+            <h2>Game Over!</h2>
+            <p>Your final score: <span id="finalScoreValue">0</span> / 10</p>
+            <div class="score-message" id="scoreMessage"></div>
+            <button class="btn-next" id="btnRestart">Play Again</button>
+        </div>
+
+        <div class="settings-panel">
+            <button class="settings-toggle" id="settingsToggle">
+                <span class="settings-icon">⚙️</span>
+                <span>Settings</span>
+                <span class="arrow" id="settingsArrow">▼</span>
+            </button>
+            <div class="settings-content" id="settingsContent">
+                <div class="setting-item">
+                    <label for="confidenceLevel">
+                        <span class="setting-label">Confidence Level</span>
+                        <span class="setting-value" id="confidenceDisplay">95%</span>
+                    </label>
+                    <div class="setting-options">
+                        <button class="option-btn" data-confidence="90">90%</button>
+                        <button class="option-btn active" data-confidence="95">95%</button>
+                        <button class="option-btn" data-confidence="99">99%</button>
+                    </div>
+                    <div class="setting-description">Lower = easier to detect trends, Higher = more conservative</div>
+                </div>
+                <div class="setting-item">
+                    <label for="monthRange">
+                        <span class="setting-label">Number of Months</span>
+                        <span class="setting-value" id="monthDisplay">12-24</span>
+                    </label>
+                    <div class="range-inputs">
+                        <input type="number" id="minMonths" min="6" max="36" value="12" class="month-input">
+                        <span class="range-separator">to</span>
+                        <input type="number" id="maxMonths" min="6" max="36" value="24" class="month-input">
+                    </div>
+                    <div class="setting-description">Fewer months = less data, More months = larger sample size</div>
+                </div>
+                <button class="apply-settings-btn" id="applySettings">Apply & Generate New Dataset</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
