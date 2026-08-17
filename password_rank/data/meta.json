@@ -1,0 +1,33 @@
+{
+  "count": 2900,
+  "minCount": 1000,
+  "shareTop100": 0.068,
+  "topPassword": "123456",
+  "topCount": 290729,
+  "openers": [
+    [
+      "qwerty",
+      "iloveyou"
+    ],
+    [
+      "dragon",
+      "monkey"
+    ],
+    [
+      "letmein",
+      "trustno1"
+    ],
+    [
+      "abc123",
+      "123abc"
+    ],
+    [
+      "football",
+      "baseball"
+    ],
+    [
+      "princess",
+      "sunshine"
+    ]
+  ]
+}

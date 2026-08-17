@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Showdown</title>
+  <meta name="description" content="Two real breached passwords enter. Guess which one more people actually used. A Cybersecurity Awareness Month game.">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://games.gregpollock.net/password_rank/">
+  <meta property="og:title" content="Password Showdown">
+  <meta property="og:description" content="Two real breached passwords enter. Guess which one more people actually used.">
+
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content="Password Showdown">
+  <meta property="twitter:description" content="Two real breached passwords enter. Guess which one more people actually used.">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="stage" id="stage">
+
+    <!-- INTRO -->
+    <section class="screen intro" id="screen-intro">
+      <p class="kicker">Cybersecurity Awareness Month</p>
+      <h1 class="title">Password<br><span class="title-accent">Showdown</span></h1>
+      <p class="lede">
+        Two real passwords from breach data step into the ring. One was chosen by more
+        people than the other. <strong>Pick the more common one.</strong>
+      </p>
+      <p class="sublede">
+        Guess right and your streak grows. Guess wrong and the run ends. The point isn't the
+        score &mdash; it's noticing how <em>unoriginal</em> our &ldquo;clever&rdquo; passwords really are.
+      </p>
+      <button class="btn btn-primary" id="btn-start">Enter the ring</button>
+      <p class="best-line" id="intro-best" hidden>Personal best: <strong id="intro-best-val">0</strong></p>
+      <p class="privacy">
+        Runs entirely in your browser. No accounts, no analytics, no logging &mdash; and no
+        network requests at all after this page loads. There is deliberately no box to type
+        your own password into.
+      </p>
+    </section>
+
+    <!-- GAME -->
+    <section class="screen game" id="screen-game" hidden>
+      <header class="hud">
+        <div class="hud-item"><span class="hud-label">Round</span><span class="hud-val" id="hud-round">1</span></div>
+        <div class="hud-brand">Password Showdown</div>
+        <div class="hud-item hud-streak"><span class="hud-label">Streak</span><span class="hud-val" id="hud-streak">0</span></div>
+      </header>
+
+      <p class="prompt" id="prompt">Which was used by more people?</p>
+
+      <div class="ring" id="ring">
+        <button class="card" id="card-0" data-side="0" aria-label="Left password">
+          <span class="card-tag">A</span>
+          <span class="card-pw" id="pw-0"></span>
+          <span class="card-count" id="count-0" aria-hidden="true"></span>
+          <span class="card-ribbon" id="ribbon-0">MORE COMMON</span>
+        </button>
+
+        <div class="vs" aria-hidden="true"><span>VS</span></div>
+
+        <button class="card" id="card-1" data-side="1" aria-label="Right password">
+          <span class="card-tag">B</span>
+          <span class="card-pw" id="pw-1"></span>
+          <span class="card-count" id="count-1" aria-hidden="true"></span>
+          <span class="card-ribbon" id="ribbon-1">MORE COMMON</span>
+        </button>
+      </div>
+
+      <div class="reveal" id="reveal" hidden>
+        <p class="reveal-fact" id="reveal-fact"></p>
+        <button class="btn btn-next" id="btn-next">Next round &rarr;</button>
+      </div>
+      <p class="hint" id="hint">Tap a card &mdash; or use &larr; &rarr; and Enter</p>
+    </section>
+
+    <!-- RESULTS -->
+    <section class="screen results" id="screen-results" hidden>
+      <p class="kicker" id="results-verdict">Run over</p>
+      <div class="final-streak">
+        <span class="final-streak-num" id="final-streak">0</span>
+        <span class="final-streak-word">in a row</span>
+      </div>
+      <p class="best-line" id="results-best"></p>
+
+      <div class="died-on" id="died-on">
+        <span class="died-label">The matchup that got you</span>
+        <div class="died-pair" id="died-pair"></div>
+      </div>
+
+      <div class="payoff" id="payoff"></div>
+
+      <div class="results-actions">
+        <button class="btn btn-primary" id="btn-again">Play again</button>
+        <button class="btn btn-ghost" id="btn-share">Copy result</button>
+      </div>
+
+      <p class="hibp">
+        Curious if your own passwords are already out there?
+        <a href="https://haveibeenpwned.com/Passwords" target="_blank" rel="noopener noreferrer">Check on Have I Been Pwned &rarr;</a>
+        <span class="hibp-note">(opens a reputable third-party site &mdash; this game never asks for your passwords)</span>
+      </p>
+    </section>
+
+  </main>
+
+  <p class="colophon">Data: real leaked-password frequencies, top 100 offensive/PII entries filtered at build time. A <a href="/">games.gregpollock.net</a> toy.</p>
+
+  <script src="game.js"></script>
+</body>
+</html>

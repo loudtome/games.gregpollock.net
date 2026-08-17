@@ -1,0 +1,5 @@
+# Build inputs / artifacts — never shipped to the client, never committed.
+rockyou.txt
+*.txt
+prep/node_modules/
+prep/removed.log
