@@ -42,6 +42,14 @@ SPORTS_TEAM_DROP = COUNTRY_TEAMS | {
 }
 SPORT_DROP = {"striking", "mma"}
 
+# Some clubs are scattered across several tokens (manutd / manchester / united).
+# Roll those into one entity so the game shows the club, not the fragments.
+# `tokens` are corpus entity names (lowercase); pop/variants are combined.
+# NB: "mancity" is deliberately NOT here — that's Manchester City, a different club.
+SPORTS_MERGES = [
+    {"label": "Manchester United", "tokens": ["manutd", "manchester", "united"]},
+]
+
 # Foods whose variants are overwhelmingly a DIFFERENT word that merely embeds the
 # food token — the count is a lie about the food, so drop them.
 #   fanta  -> fantasy / fantastic / fantasia (the soda is a rounding error)
@@ -111,6 +119,41 @@ def ents_from(corpus, theme, keep=None, drop=None):
     return out
 
 
+def apply_merges(entities, merges):
+    """Combine several scattered tokens into one labeled entity (summed pop /
+    variant count, best rank, a round-robin of each part's example variants)."""
+    by = {e["e"].lower(): e for e in entities}
+    consumed = set()
+    merged = []
+    for m in merges:
+        parts = [by[t] for t in m["tokens"] if t in by]
+        if not parts:
+            continue
+        consumed.update(t for t in m["tokens"] if t in by)
+        parts.sort(key=lambda x: -x["pop"])
+        # round-robin the parts' examples so all forms show up under "seen as"
+        lists = [list(p["ex"]) for p in parts]
+        ex = []
+        while len(ex) < MAX_EXAMPLES and any(lists):
+            for pl in lists:
+                if pl:
+                    x = pl.pop(0)
+                    if x not in ex:
+                        ex.append(x)
+                    if len(ex) >= MAX_EXAMPLES:
+                        break
+        merged.append({
+            "e": m["label"],
+            "pop": sum(p["pop"] for p in parts),
+            "v": sum(p["v"] for p in parts),
+            "r": min(p["r"] for p in parts),
+            "ex": ex,
+            "src": parts[0]["src"],
+        })
+    kept = [e for e in entities if e["e"].lower() not in consumed]
+    return merged + kept
+
+
 def dedupe_top(entities, cap):
     """Keep highest-pop entity per display name, return top `cap` by pop."""
     best = {}
@@ -127,8 +170,10 @@ def main():
 
     celebs = dedupe_top(ents_from(corpus, "celebrity") + ents_from(corpus, "athlete"),
                         MAX_PER_CATEGORY)
-    sports = dedupe_top(ents_from(corpus, "sport", drop=SPORT_DROP) +
+    sports = dedupe_top(apply_merges(
+                        ents_from(corpus, "sport", drop=SPORT_DROP) +
                         ents_from(corpus, "sports_team", drop=SPORTS_TEAM_DROP),
+                        SPORTS_MERGES),
                         MAX_PER_CATEGORY)
     foods = dedupe_top(ents_from(corpus, "food", drop=FOOD_DROP), MAX_PER_CATEGORY)
     names = dedupe_top(ents_from(corpus, "name"), MAX_PER_CATEGORY)
