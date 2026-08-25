@@ -6,7 +6,12 @@
       "**/.*",
       "**/node_modules/**",
       "**/*.txt",
-      "password_rank/prep/**"
+      "password_rank/prep/**",
+      "password_rank/output/**",
+      "password_rank/themes/**",
+      "password_rank/data/x*",
+      "password_rank/**/*.py",
+      "password_rank/**/__pycache__/**"
     ]
   }
 }
