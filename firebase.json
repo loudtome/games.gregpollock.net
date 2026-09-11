@@ -11,7 +11,11 @@
       "password_rank/themes/**",
       "password_rank/data/x*",
       "password_rank/**/*.py",
-      "password_rank/**/__pycache__/**"
+      "password_rank/**/__pycache__/**",
+      "state-of-the-trail/*.py",
+      "state-of-the-trail/engine.test.js",
+      "state-of-the-trail/package.json",
+      "state-of-the-trail/README.md"
     ]
   }
 }

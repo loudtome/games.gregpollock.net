@@ -30,6 +30,34 @@
         </div>
 
         <div class="games-grid">
+            <a href="/state-of-the-trail/" class="game-tile">
+                <div class="game-image">
+                    <svg class="chart-preview" viewBox="0 0 420 220" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="420" height="220" fill="#fdfbf7"/>
+                        <!-- abstract states, redder = more dangerous -->
+                        <polygon points="300,150 380,140 390,195 300,195" fill="#d0af9f"/>
+                        <polygon points="235,120 300,120 300,195 245,190" fill="#b8886f"/>
+                        <polygon points="175,95 245,105 240,185 175,175" fill="#a5624a"/>
+                        <polygon points="110,80 175,85 175,175 115,165" fill="#7d392f"/>
+                        <polygon points="40,55 110,70 115,160 45,150" fill="#c9a08c"/>
+                        <!-- route: solid red past, dashed ahead, through centroids -->
+                        <polyline points="345,168 268,152 208,138 143,120 78,108" fill="none" stroke="#a34230" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+                        <circle cx="345" cy="168" r="4.5" fill="#fff" stroke="#7d8c64" stroke-width="1.5"/>
+                        <circle cx="268" cy="152" r="4.5" fill="#fff" stroke="#7d8c64" stroke-width="1.5"/>
+                        <circle cx="208" cy="138" r="4.5" fill="#fff" stroke="#7d8c64" stroke-width="1.5"/>
+                        <!-- you-are-here marker -->
+                        <circle cx="143" cy="120" r="11" fill="#a3423055"/>
+                        <circle cx="143" cy="120" r="5" fill="#a34230" stroke="#fff9e9" stroke-width="2"/>
+                        <text x="352" y="150" font-family="Helvetica,Arial,sans-serif" font-size="11" font-weight="800" fill="#7d392f">FL</text>
+                        <text x="42" y="48" font-family="Helvetica,Arial,sans-serif" font-size="11" font-weight="800" fill="#354e3c">OR</text>
+                    </svg>
+                </div>
+                <div class="game-content">
+                    <h2 class="game-title">The State of the Trail</h2>
+                    <p class="game-description">Plot a route from Florida to Oregon, then keep five travelers alive through encounters drawn from real state legislation. It&rsquo;s Oregon Trail, if the dysentery were policy.</p>
+                </div>
+            </a>
+
             <a href="/password_rank/" class="game-tile">
                 <div class="game-image">
                     <svg class="chart-preview" viewBox="0 0 420 220" xmlns="http://www.w3.org/2000/svg">
