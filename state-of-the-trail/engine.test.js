@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {borders,validRoute,createGame,encounter,applyOutcome,advance,living} from './engine.js';
+import {borders,validRoute,createGame,encounter,applyOutcome,advance,living,FOOD_MAX} from './engine.js';
 const data=JSON.parse(fs.readFileSync(new URL('./data/bills.json',import.meta.url)));
 const route=['FL','AL','MS','LA','TX','NM','AZ','CA','OR'];
 test('all 50 states and reciprocal shared borders; no corner-only crossings',()=>{
@@ -11,7 +11,9 @@ test('all 50 states and reciprocal shared borders; no corner-only crossings',()=
 });
 test('continuous routes in any direction work; jumps, loops, and islands fail',()=>{
  assert.ok(validRoute(route));assert.ok(validRoute(['FL','GA','TN','KY','IN','IL','IA','MN','SD','ND','MT','ID','WA','OR']));
- for(const r of [['FL','OR'],['FL','GA','FL','AL','OR'],['FL','AK','OR'],['AL','OR']])assert.equal(validRoute(r),false);
+ assert.ok(validRoute(['GA','TN','KY','IN','IL','IA','MN','SD','ND','MT','ID','WA','OR'])); // any mainland state may start
+ assert.ok(validRoute(['ID','WA','OR']));assert.ok(validRoute(['OR'])); // short journeys, and starting on the destination, are legal
+ for(const r of [['FL','OR'],['FL','GA','FL','AL','OR'],['FL','AK','OR'],['AL','OR'],['AK','OR'],['GA','TN']])assert.equal(validRoute(r),false); // jumps, loops, islands, and routes that never reach Oregon
 });
 test('all entries map to valid states and bill URL agrees',()=>{
  assert.equal(data.bills.length,1182);
@@ -38,9 +40,18 @@ test('deaths persist, funds cannot go negative, mitigation works',()=>{
  const g=createGame(route);g.party[0].health=10;
  assert.deepEqual(applyOutcome(g,{damage:20,target:0,cost:50}),['Alex']);
  applyOutcome(g,{heal:100});assert.equal(g.party[0].health,0);
- applyOutcome(g,{damage:20,target:1,cost:50},true);assert.equal(g.party[1].health,93);assert.equal(g.money,600);
+ applyOutcome(g,{damage:20,target:1,cost:50},true);assert.equal(g.party[1].health,100);assert.equal(g.money,600); // paying fully avoids the harm
  assert.throws(()=>applyOutcome(g,{cost:601},true));assert.equal(g.money,600);
  applyOutcome(g,{damage:200,target:null});assert.equal(g.status,'lost');assert.equal(living(g).length,0);
+});
+test('food is a bounded shared supply; injuries double when it runs out',()=>{
+ const g=createGame(route);assert.equal(g.food,100);
+ applyOutcome(g,{food:30});assert.equal(g.food,70); // a delay drains rations
+ applyOutcome(g,{food:40,cost:50},true);assert.equal(g.food,70);assert.equal(g.money,600); // paying fully avoids the loss
+ applyOutcome(g,{foodGain:200});assert.equal(g.food,FOOD_MAX); // gains cap at the max
+ applyOutcome(g,{food:1000});assert.equal(g.food,0); // never negative
+ g.party[0].health=100;applyOutcome(g,{damage:20,target:0});assert.equal(g.party[0].health,60); // starving: 20 damage lands as 40
+ applyOutcome(g,{foodGain:50});g.party[1].health=100;applyOutcome(g,{damage:20,target:1});assert.equal(g.party[1].health,80); // fed: 20 damage lands as 20
 });
 test('Oregon has its full encounter segment before victory',()=>{
  const g=createGame(route);for(let i=0;i<route.length*4-1;i++)advance(g);
@@ -53,7 +64,7 @@ test('simulated complete games terminate with bounded resources and real encount
   const g=createGame(route);
   for(let i=0;g.status==='travel'&&i<200;i++){
    const e=encounter(g,data.bills,random);applyOutcome(g,e,e.kind==='bill'&&g.money>=e.cost);advance(g);
-   assert.ok(g.money>=0);for(const p of g.party)assert.ok(p.health>=0&&p.health<=100);
+   assert.ok(g.money>=0);assert.ok(g.food>=0&&g.food<=FOOD_MAX);for(const p of g.party)assert.ok(p.health>=0&&p.health<=100);
   }
   assert.ok(['won','lost'].includes(g.status));if(g.status==='won')wins++;else losses++;
  }

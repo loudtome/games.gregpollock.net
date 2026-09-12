@@ -1,0 +1,9 @@
+Bundled fonts, used under the SIL Open Font License, Version 1.1
+(https://openfontlicense.org):
+
+- press-start-2p.woff2 — "Press Start 2P" by CodeMan38. OFL-1.1.
+- vt323.woff2 — "VT323" by Peter Hull. OFL-1.1.
+
+Only the Latin subset of each font is bundled. The Open Font License permits
+bundling and redistribution with the software; the fonts may not be sold on
+their own. No Reserved Font Names are altered.
