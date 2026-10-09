@@ -145,13 +145,20 @@ button:disabled{cursor:not-allowed;opacity:.45;box-shadow:none;transform:none}
 .road-scene{height:250px;position:relative;overflow:hidden;border:3px solid var(--line);box-shadow:5px 5px 0 var(--shadow);
  background:linear-gradient(180deg,var(--sky1) 0%,var(--sky2) 45%,var(--sky3) 72%)}
 .sun{position:absolute;width:46px;height:46px;background:#e8c25a;left:74%;top:22px;box-shadow:0 0 0 6px rgba(232,194,90,.25)}
-.mountains{position:absolute;width:200%;height:130px;bottom:58px;background:#3a2f28;
- clip-path:polygon(0 100%,4% 40%,8% 100%,12% 25%,16% 100%,22% 55%,27% 15%,32% 100%,40% 45%,46% 100%,52% 30%,60% 100%,66% 50%,72% 12%,78% 100%,86% 40%,92% 100%,97% 55%,100% 100%);
- animation:scroll 65s linear infinite;opacity:.9}
-.mountains.near{height:92px;bottom:44px;background:#241c14;animation-duration:35s}
-.trees{position:absolute;bottom:42px;width:200%;font-size:70px;letter-spacing:44px;color:#2a2414;white-space:nowrap;animation:scroll 15s linear infinite}
+.layer{position:absolute;left:0;background-repeat:repeat-x;background-position:0 100%;animation:linear infinite}
+.layer.far{width:calc(100% + 1200px);height:130px;bottom:56px;background-size:1200px 130px;animation-name:pan-far;animation-duration:150s;opacity:.9}
+.layer.mid{width:calc(100% + 900px);height:90px;bottom:56px;background-size:900px 90px;animation-name:pan-mid;animation-duration:36s}
+.layer.near{width:calc(100% + 600px);height:110px;bottom:56px;background-size:600px 110px;animation-name:pan-near;animation-duration:6.5s;z-index:1} /* 6.5s must match NEAR_SPEED in scene.js */
+.signs{position:absolute;inset:0;z-index:1;pointer-events:none}
+.sign{position:absolute;bottom:56px;left:100%;animation:pass linear forwards;display:flex;flex-direction:column;align-items:center}
+.sign span{display:block;font-family:'PixHead',monospace;font-size:9px;letter-spacing:1px;line-height:1.5;padding:7px 10px;white-space:nowrap;text-shadow:none;border:3px solid var(--shadow)}
+.sign:after{content:'';width:6px;height:34px;box-shadow:-36px 0 0 #1b140d,36px 0 0 #1b140d} /* two posts */
+.sign.welcome span{background:#3b6b3a;color:#f2ecd6;outline:2px solid #f2ecd6;outline-offset:-6px;padding:9px 14px}
+.sign.hope span{background:#2f5d8a;color:#f2ecd6;outline:2px solid #f2ecd6;outline-offset:-6px;padding:9px 14px}
+.sign.board span{background:#d8c79a;color:#8c2a17;font-family:'PixBody',monospace;font-size:24px;line-height:1;padding:6px 12px;transform:rotate(-2deg);border-color:#3a2a17} /* hand-painted; VT323 also has the accents */
+.sign.board:after{background:#1b140d;box-shadow:none}
 .road{position:absolute;bottom:0;width:100%;height:56px;background:#3a352b;border-top:6px solid var(--ground2)}
-.road:after{content:'';position:absolute;top:24px;width:200%;height:4px;background:repeating-linear-gradient(90deg,transparent 0 30px,var(--amber) 30px 78px);animation:scroll 5s linear infinite}
+.road:after{content:'';position:absolute;top:24px;left:0;width:calc(100% + 78px);height:4px;background:repeating-linear-gradient(90deg,transparent 0 30px,var(--amber) 30px 78px);animation:pan-road .39s linear infinite}
 .van{position:absolute;bottom:38px;left:38%;width:130px;height:74px;z-index:2;animation:bounce .5s steps(2) infinite alternate}
 .van-top{position:absolute;left:10px;top:0;width:96px;height:38px;background:#b98a3c;border:3px solid var(--shadow);display:flex;padding:6px;gap:6px}
 .van-top i{width:34px;background:#6a7a6a;border:2px solid var(--shadow)}
@@ -159,9 +166,6 @@ button:disabled{cursor:not-allowed;opacity:.45;box-shadow:none;transform:none}
 .van-body span{font-family:'PixHead',monospace;font-size:8px;position:absolute;top:11px;left:20px;color:#2a1206;text-shadow:none}
 .wheel{position:absolute;bottom:0;width:24px;height:24px;border:6px solid #191510;background:#5a544a}
 .wheel.one{left:20px}.wheel.two{right:14px}
-.road-sign{position:absolute;right:11%;bottom:74px;background:var(--toxic);color:#1c2408;border:3px solid var(--shadow);
- font-family:'PixHead',monospace;font-size:8px;padding:8px 12px;z-index:1;text-shadow:none}
-.road-sign:after{content:'';position:absolute;width:5px;height:34px;background:#3a352b;left:50%;top:100%}
 .scene-caption{position:absolute;bottom:9px;left:14px;font-family:'PixHead',monospace;font-size:8px;letter-spacing:1px;z-index:2;color:#241c10}
 .paused .road-scene *{animation-play-state:paused!important}
 
@@ -243,7 +247,11 @@ footer{border-top:3px solid var(--line);padding:18px 0 30px;display:flex;justify
 footer a{color:var(--amber)}
 
 [hidden]{display:none!important}
-@keyframes scroll{to{transform:translateX(-50%)}}
+@keyframes pan-far{to{transform:translateX(-1200px)}}
+@keyframes pan-mid{to{transform:translateX(-900px)}}
+@keyframes pan-near{to{transform:translateX(-600px)}}
+@keyframes pan-road{to{transform:translateX(-78px)}}
+@keyframes pass{to{left:-320px}}
 @keyframes bounce{to{transform:translateY(-3px)}}
 @keyframes jpulse{0%{transform:scale(.5);opacity:.85}75%{transform:scale(2.1);opacity:0}100%{opacity:0}}
 @keyframes blink{50%{opacity:.25}}
