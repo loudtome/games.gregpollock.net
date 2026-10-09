@@ -5,9 +5,13 @@ for (const s in borders) borders[s] = borders[s].split(' ').filter(Boolean);
 export const FOOD_START=100, FOOD_MAX=140, FOOD_PER_DAY=3; // shared rations; run out and injuries hit twice as hard
 // A route may start from any mainland state (AK/HI have no road connection) and must end in Oregon.
 export function validRoute(route) { return route.length>0 && borders[route[0]]?.length>0 && route.at(-1)==='OR' && new Set(route).size===route.length && route.every((s,i)=>!i || borders[route[i-1]]?.includes(s)); }
+// Good luck is streaky by design: the chance of a good encounter starts low, climbs with every
+// setback, and resets once one arrives. Busier states (more bills) climb more slowly.
+export const GOOD_START=0.1;
+export const goodStep=count=>0.4-0.2*Math.min(1,Math.sqrt(count/108)); // +40 points in quiet states, +20 in the busiest
 export function createGame(route) {
  if (!validRoute(route)) throw new Error('Select a continuous route to Oregon.');
- return {route:[...route],index:0,day:1,tick:0,money:650,food:FOOD_START,party:['Alex','Jamie','Morgan','Riley','Sam'].map(name=>({name,health:100})),status:'travel',seen:[],last:null};
+ return {route:[...route],index:0,day:1,tick:0,money:650,food:FOOD_START,party:['Alex','Jamie','Morgan','Riley','Sam'].map(name=>({name,health:100})),status:'travel',seen:[],last:null,goodChance:GOOD_START};
 }
 export const living = g => g.party.filter(p=>p.health>0);
 export function applyOutcome(g, event, pay=false) {
@@ -15,29 +19,36 @@ export function applyOutcome(g, event, pay=false) {
  if(cost>g.money) throw new Error('Insufficient funds');
  g.money=Math.max(0,g.money-cost+(event.gain||0));
  // Food is a shared supply: delays drain it, good turns replenish it. Paying avoids the loss entirely.
- const foodLoss=event.food ? (pay?0:event.food) : 0;
- g.food=Math.max(0,Math.min(FOOD_MAX,g.food-foodLoss+(event.foodGain||0)));
+ const loss=event.food&&!pay ? delayLoss(g,event) : {food:0,money:0,damage:0};
+ g.money-=loss.money;
+ g.food=Math.max(0,Math.min(FOOD_MAX,g.food-loss.food+(event.foodGain||0)));
  const starving=g.food<=0; // out of rations: every injury counts double
  const deaths=[];
  for(const [i,p] of g.party.entries()) {
   if(p.health<=0) continue;
   let damage=event.damage && (event.target===null || event.target===i) ? (pay?0:event.damage):0; // paying fully avoids the harm
   if(damage&&starving) damage*=2;
+  damage+=loss.damage; // a delay the party can't cover with rations or money comes out of everyone's health
   p.health=Math.max(0,Math.min(100,p.health-damage+(event.heal||0)));
   if(!p.health){deaths.push(p.name);p.deathState=g.route[g.index];p.deathCategory=event.bill?event.bill.category:'the road';}
  }
  if(!living(g).length) g.status='lost';
- g.last={...event,paid:pay,deaths,starving};
+ g.last={...event,paid:pay,deaths,starving,loss};
  return deaths;
+}
+// What accepting a delay actually costs. Rations go first; any shortfall is bought at the
+// event's own price per ration; whatever money can't cover costs every survivor 1 health per ration.
+export function delayLoss(g,event) {
+ const food=Math.min(g.food,event.food), short=event.food-food, rate=(event.cost||0)/event.food;
+ const money=rate?Math.min(g.money,Math.ceil(short*rate)):0;
+ return {food,money,damage:Math.max(0,Math.ceil(short-(rate?money/rate:0)))};
 }
 export function encounter(g,bills,random=Math.random) {
  const local=bills.filter(b=>b.state===g.route[g.index]);
- // Good events are wasted while the party is still healthy, so front-load the danger:
- // drive the negative-encounter rate toward certainty for the first few states, then relax to normal.
- const early=Math.max(0,1-g.index/3); // 1 at the start, tapering to 0 by the fourth state
- let risk=local.length ? 0.43+0.4*Math.sqrt(local.length/108) : 0;
- if(local.length) risk+=(1-risk)*0.85*early;
- if(random()<risk) {
+ const chance=g.goodChance??GOOD_START;
+ // States with no bills are always good; otherwise roll against the climbing good chance.
+ if(local.length && random()<1-chance) {
+  g.goodChance=Math.min(1,chance+goodStep(local.length));
   const unseen=local.filter(b=>!g.seen.includes(b.url));
   const pool=unseen.length?unseen:local, bill=pool[Math.floor(random()*pool.length)];
   g.seen.push(bill.url);
@@ -50,6 +61,7 @@ export function encounter(g,bills,random=Math.random) {
   const text=group?bill.description:bill.description.replaceAll('{name}',g.party[target].name);
   return {kind:'bill',bill,title:bill.summary,text,mode:'harm',damage:group?18+Math.floor(random()*18):35+Math.floor(random()*34),target,cost:70+Math.floor(random()*81)};
  }
+ g.goodChance=GOOD_START;
  const r=random();
  if(r<0.42) return {kind:'good',mode:'food',title:'Full pantry, open door',text:'Roadside growers wave you over and load a crate of food into the van.',foodGain:14+Math.floor(random()*19)};
  if(r<0.72) return {kind:'good',mode:'money',title:'Kindness at the crossroads',text:'Neighbors collect a travel fund for your party. The road feels a little less lonely.',gain:25+Math.floor(random()*46)};

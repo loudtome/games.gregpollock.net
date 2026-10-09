@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {borders,validRoute,createGame,encounter,applyOutcome,advance,living,FOOD_MAX} from './engine.js';
+import {borders,validRoute,createGame,encounter,applyOutcome,advance,living,delayLoss,FOOD_MAX,GOOD_START} from './engine.js';
 const data=JSON.parse(fs.readFileSync(new URL('./data/bills.json',import.meta.url)));
 const route=['FL','AL','MS','LA','TX','NM','AZ','CA','OR'];
 test('all 50 states and reciprocal shared borders; no corner-only crossings',()=>{
@@ -46,8 +46,16 @@ test('encounters follow the bill\'s authored effect and name the injured travele
 test('negative encounters always draw from the current state; empty states are positive',()=>{
  for(const state of Object.keys(borders)){
   const g=createGame(route);g.route=[state];
-  for(let i=0;i<20;i++){const e=encounter(g,data.bills,()=>0);if(data.bills.some(b=>b.state===state)){assert.equal(e.kind,'bill');assert.equal(e.bill.state,state);}else assert.equal(e.kind,'good');}
+  for(let i=0;i<20;i++){g.goodChance=GOOD_START;const e=encounter(g,data.bills,()=>0);if(data.bills.some(b=>b.state===state)){assert.equal(e.kind,'bill');assert.equal(e.bill.state,state);}else assert.equal(e.kind,'good');}
  }
+});
+test('good luck climbs with each setback and resets after a good turn, so bad runs are bounded',()=>{
+ const g=createGame(route);let bad=0;
+ for(let i=0;i<20;i++){const e=encounter(g,data.bills,()=>0.5);if(e.kind==='bill')bad++;else break;} // a middling roll every time
+ assert.ok(bad>=1&&bad<=5,`${bad} setbacks in a row`);
+ assert.equal(g.goodChance,GOOD_START); // the good turn reset it
+ for(let i=0;i<20;i++)encounter(g,data.bills,()=>0); // worst possible luck still yields a good turn eventually
+ assert.ok(g.goodChance<1);
 });
 test('deaths persist, funds cannot go negative, mitigation works',()=>{
  const g=createGame(route);g.party[0].health=10;
@@ -62,9 +70,22 @@ test('food is a bounded shared supply; injuries double when it runs out',()=>{
  applyOutcome(g,{food:30});assert.equal(g.food,70); // a delay drains rations
  applyOutcome(g,{food:40,cost:50},true);assert.equal(g.food,70);assert.equal(g.money,600); // paying fully avoids the loss
  applyOutcome(g,{foodGain:200});assert.equal(g.food,FOOD_MAX); // gains cap at the max
- applyOutcome(g,{food:1000});assert.equal(g.food,0); // never negative
+ applyOutcome(g,{food:FOOD_MAX});assert.equal(g.food,0); // drains to empty, never negative
  g.party[0].health=100;applyOutcome(g,{damage:20,target:0});assert.equal(g.party[0].health,60); // starving: 20 damage lands as 40
  applyOutcome(g,{foodGain:50});g.party[1].health=100;applyOutcome(g,{damage:20,target:1});assert.equal(g.party[1].health,80); // fed: 20 damage lands as 20
+});
+test('a delay the rations cannot cover falls to money, then to everyone\'s health',()=>{
+ const delay={food:20,cost:100}; // $5 per ration
+ let g=createGame(route);g.food=50;
+ assert.deepEqual(delayLoss(g,delay),{food:20,money:0,damage:0}); // enough rations: no fallback
+ g.food=8;applyOutcome(g,delay);assert.equal(g.food,0);assert.equal(g.money,590); // 12 short, bought at $5 each
+ for(const p of g.party)assert.equal(p.health,100);
+ g=createGame(route);g.food=0;g.money=30;g.party[0].health=0;
+ assert.deepEqual(delayLoss(g,delay),{food:0,money:30,damage:14}); // $30 covers 6; the other 14 cost health
+ applyOutcome(g,delay);assert.equal(g.money,0);
+ assert.equal(g.party[0].health,0);for(const p of g.party.slice(1))assert.equal(p.health,86); // not doubled by starving
+ g.food=0;g.money=0;applyOutcome(g,delay);for(const p of g.party.slice(1))assert.equal(p.health,66); // nothing left: all of it costs health
+ g.food=0;g.money=0;applyOutcome(g,delay,false);assert.ok(g.party.every(p=>p.health<100));
 });
 test('Oregon has its full encounter segment before victory',()=>{
  const g=createGame(route);for(let i=0;i<route.length*4-1;i++)advance(g);

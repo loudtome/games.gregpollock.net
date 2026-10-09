@@ -1,4 +1,4 @@
-import {borders,validRoute,createGame,living,encounter,applyOutcome,advance} from './engine.js';
+import {borders,validRoute,createGame,living,encounter,applyOutcome,advance,delayLoss} from './engine.js';
 const $=id=>document.getElementById(id), NS='http://www.w3.org/2000/svg';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Deterministic color per issue category, so the same category always shows the same label color.
@@ -100,8 +100,13 @@ function showEvent(){
   const b=e.bill,harm=e.mode==='harm',poor=game.money<e.cost,unit=harm?'health':'rations';
   const dbl=harm&&game.food<=0?2:1; // out of rations doubles the injury, so show the real number
   const full=harm?e.damage*dbl:e.food;
-  const chip=harm?statChip('health',e.target===null?'Everyone':game.party[e.target].name,-full):statChip('food','Rations',-full);
-  $('event-content').innerHTML=`<div class="news"><div class="news-masthead"><span class="news-name">${esc(paperName(b.state))}</span><span class="news-date">DAY ${game.day} · ${esc(state).toUpperCase()}</span></div><div class="news-eyebrow"><span class="news-cat" style="--c:${catColor(b.category)}">${categoryIcon(b.category)}<span>${esc(b.category)}</span></span><span class="news-passed">${esc(legName(b))} passes!</span></div><h2 class="news-headline">${esc(b.summary)}</h2></div><div class="consequence-block"><div class="cq-label">What it means for your party</div><p class="ev-narrative">${esc(e.text)}</p><div class="ev-consequence">${chip}${dbl>1?'<span class="cq-note">rations empty · damage doubled</span>':''}</div><a class="ev-link" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">Read the proposal ↗</a><div class="event-buttons"><button class="primary" id="mitigate" ${poor?'disabled':''}>${poor?`Pay $${e.cost} — not enough money`:`Pay $${e.cost} and lose no ${unit}`}</button><button class="small" id="accept">Lose ${full} ${unit}</button></div></div>`;
+  // A delay the rations can't cover spills over into money, then everyone's health.
+  const loss=harm?null:delayLoss(game,e),parts=[];
+  if(loss){if(loss.food||(!loss.money&&!loss.damage))parts.push(`${loss.food} rations`);if(loss.money)parts.push(`$${loss.money}`);if(loss.damage)parts.push(`${loss.damage} health each`);}
+  const lose=harm?`${full} health`:parts.length>1?parts.slice(0,-1).join(', ')+' and '+parts.at(-1):parts[0];
+  const short=loss&&loss.food<e.food?`<span class="cq-note">not enough rations · ${loss.damage?(loss.money?'money and health cover':'health covers'):'money covers'} the rest</span>`:'';
+  const chip=harm?statChip('health',e.target===null?'Everyone':game.party[e.target].name,-full):[loss.food||(!loss.money&&!loss.damage)?statChip('food','Rations',-loss.food):'',loss.money?statChip('money','Travel fund',-loss.money):'',loss.damage?statChip('health','Everyone',-loss.damage):''].join('')+short;
+  $('event-content').innerHTML=`<div class="news"><div class="news-masthead"><span class="news-name">${esc(paperName(b.state))}</span><span class="news-date">DAY ${game.day} · ${esc(state).toUpperCase()}</span></div><div class="news-eyebrow"><span class="news-cat" style="--c:${catColor(b.category)}">${categoryIcon(b.category)}<span>${esc(b.category)}</span></span><span class="news-passed">${esc(legName(b))} passes!</span></div><h2 class="news-headline">${esc(b.summary)}</h2></div><div class="consequence-block"><div class="cq-label">What it means for your party</div><p class="ev-narrative">${esc(e.text)}</p><div class="ev-consequence">${chip}${dbl>1?'<span class="cq-note">rations empty · damage doubled</span>':''}</div><a class="ev-link" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">Read the proposal ↗</a><div class="event-buttons"><button class="primary" id="mitigate" ${poor?'disabled':''}>${poor?`Pay $${e.cost} — not enough money`:`Pay $${e.cost} and lose no ${unit}`}</button><button class="small" id="accept">Lose ${lose}</button></div></div>`;
   $('mitigate').onclick=()=>resolve(true);$('accept').onclick=()=>resolve(false);
  }else{
   const chip=e.mode==='food'?statChip('food','Rations',e.foodGain):e.mode==='money'?statChip('money','Travel fund',e.gain):statChip('health','Everyone',e.heal);
@@ -117,7 +122,7 @@ function resolve(pay){
  if(e.kind==='bill'){
   const link=`<a href="${esc(e.bill.url)}" target="_blank" rel="noopener noreferrer">${esc(e.bill.bill)}: ${esc(e.bill.summary)}</a>`;
   if(e.mode==='harm'){const who=e.target===null?'All survivors':esc(game.party[e.target].name);log(pay?`${link} — Paid $${e.cost} to keep the party safe.`:`${link} — ${who} lost ${e.damage*(starved?2:1)} health${starved?' (rations empty — damage doubled)':''}.`);}
-  else log(pay?`${link} — Paid $${e.cost} to avoid the delay.`:`${link} — Delays cost ${e.food} rations.`);
+  else log(pay?`${link} — Paid $${e.cost} to avoid the delay.`:`${link} — Delays cost ${[game.last.loss.food?`${game.last.loss.food} rations`:'',game.last.loss.money?`$${game.last.loss.money}`:'',game.last.loss.damage?`${game.last.loss.damage} health for every survivor`:''].filter(Boolean).join(', ')||'nothing'}.`);
  }else log(`${e.title}. ${e.mode==='food'?`Gained ${e.foodGain} rations.`:e.mode==='money'?`Received $${e.gain}.`:`Survivors recovered up to ${e.heal} health.`}`);
  if(deaths.length)log(`<strong>${deaths.map(esc).join(', ')} ${deaths.length===1?'has':'have'} died on the trail.</strong>`);
  advance(game);renderTravel();
