@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {borders,validRoute,createGame,encounter,applyOutcome,advance,living,delayLoss,FOOD_MAX,GOOD_START,GOOD} from './engine.js';
+import {borders,validRoute,createGame,encounter,applyOutcome,advance,living,delayLoss,FOOD_MAX,GOOD_START,GOOD,MONEY_START,FOOD_START,TUNING,goodOdds} from './engine.js';
 const data=JSON.parse(fs.readFileSync(new URL('./data/bills.json',import.meta.url)));
 const route=['FL','AL','MS','LA','TX','NM','AZ','CA','OR'];
 test('all 50 states and reciprocal shared borders; no corner-only crossings',()=>{
@@ -69,7 +69,7 @@ test('good encounters vary and don\'t repeat until the pool for that resource is
  }
 });
 test('deaths persist, funds cannot go negative, mitigation works',()=>{
- const g=createGame(route);g.party[0].health=10;
+ const g=createGame(route);g.money=650;g.party[0].health=10;
  assert.deepEqual(applyOutcome(g,{damage:20,target:0,cost:50}),['Alex']);
  applyOutcome(g,{heal:100});assert.equal(g.party[0].health,0);
  applyOutcome(g,{damage:20,target:1,cost:50},true);assert.equal(g.party[1].health,100);assert.equal(g.money,600); // paying fully avoids the harm
@@ -77,7 +77,7 @@ test('deaths persist, funds cannot go negative, mitigation works',()=>{
  applyOutcome(g,{damage:200,target:null});assert.equal(g.status,'lost');assert.equal(living(g).length,0);
 });
 test('food is a bounded shared supply; injuries double when it runs out',()=>{
- const g=createGame(route);assert.equal(g.food,100);
+ const g=createGame(route);assert.equal(g.food,FOOD_START);g.food=100;g.money=650;
  applyOutcome(g,{food:30});assert.equal(g.food,70); // a delay drains rations
  applyOutcome(g,{food:40,cost:50},true);assert.equal(g.food,70);assert.equal(g.money,600); // paying fully avoids the loss
  applyOutcome(g,{foodGain:200});assert.equal(g.food,FOOD_MAX); // gains cap at the max
@@ -87,7 +87,7 @@ test('food is a bounded shared supply; injuries double when it runs out',()=>{
 });
 test('a delay the rations cannot cover falls to money, then to everyone\'s health',()=>{
  const delay={food:20,cost:100}; // $5 per ration
- let g=createGame(route);g.food=50;
+ let g=createGame(route);g.food=50;g.money=650;
  assert.deepEqual(delayLoss(g,delay),{food:20,money:0,damage:0}); // enough rations: no fallback
  g.food=8;applyOutcome(g,delay);assert.equal(g.food,0);assert.equal(g.money,590); // 12 short, bought at $5 each
  for(const p of g.party)assert.equal(p.health,100);
@@ -102,16 +102,26 @@ test('Oregon has its full encounter segment before victory',()=>{
  const g=createGame(route);for(let i=0;i<route.length*4-1;i++)advance(g);
  assert.equal(g.route[g.index],'OR');assert.equal(g.status,'travel');advance(g);assert.equal(g.status,'won');
 });
-test('simulated complete games terminate with bounded resources and real encounters',()=>{
- let wins=0,losses=0;
- for(let seed=1;seed<=100;seed++){
+test('rubber band: a party ahead of the target draws worse odds than one behind it',()=>{
+ const ahead=createGame(route),behind=createGame(route);
+ behind.index=ahead.index=4;for(const p of behind.party)p.health=30;behind.food=0;behind.money=0;
+ assert.ok(goodOdds(behind)>goodOdds(ahead)+0.3,`${goodOdds(behind)} vs ${goodOdds(ahead)}`);
+ assert.ok(goodOdds(ahead)>=TUNING.floor);
+});
+test('simulated trips are close calls: usually won, usually costly',()=>{
+ let wins=0,deaths=0,close=0;const N=200;
+ for(let seed=1;seed<=N;seed++){
   let x=seed;const random=()=>((x=(Math.imul(x,1664525)+1013904223)>>>0)/4294967296);
-  const g=createGame(route);
+  const g=createGame(route);let low=500;
   for(let i=0;g.status==='travel'&&i<200;i++){
    const e=encounter(g,data.bills,random);applyOutcome(g,e,e.kind==='bill'&&g.money>=e.cost);advance(g);
    assert.ok(g.money>=0);assert.ok(g.food>=0&&g.food<=FOOD_MAX);for(const p of g.party)assert.ok(p.health>=0&&p.health<=100);
+   low=Math.min(low,living(g).reduce((a,p)=>a+p.health,0));
   }
-  assert.ok(['won','lost'].includes(g.status));if(g.status==='won')wins++;else losses++;
+  assert.ok(['won','lost'].includes(g.status));if(g.status==='won')wins++;deaths+=g.party.filter(p=>!p.health).length;if(low<250)close++;
  }
- assert.ok(wins>0);assert.ok(losses>0);console.log(`100 seeded trips: ${wins} victories, ${losses} losses`);
+ console.log(`${N} seeded trips: ${wins} reached Oregon, ${(deaths/N).toFixed(2)} deaths per trip, ${close} fell below half health`);
+ assert.ok(wins/N>=0.9,'most trips should reach Oregon');
+ assert.ok(deaths/N>=0.5&&deaths/N<=2,'a typical trip costs a traveler or so');
+ assert.ok(close/N>=0.8,'nearly every trip should get close');
 });

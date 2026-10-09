@@ -2,16 +2,18 @@ export const borders = {
  AL:'FL GA MS TN', AK:'', AZ:'CA NM NV UT', AR:'LA MS MO OK TN TX', CA:'AZ NV OR', CO:'KS NE NM OK UT WY', CT:'MA NY RI', DE:'MD NJ PA', FL:'AL GA', GA:'AL FL NC SC TN', HI:'', ID:'MT NV OR UT WA WY', IL:'IA IN KY MO WI', IN:'IL KY MI OH', IA:'IL MN MO NE SD WI', KS:'CO MO NE OK', KY:'IL IN MO OH TN VA WV', LA:'AR MS TX', ME:'NH', MD:'DE PA VA WV', MA:'CT NH NY RI VT', MI:'IN OH WI', MN:'IA ND SD WI', MS:'AL AR LA TN', MO:'AR IA IL KS KY NE OK TN', MT:'ID ND SD WY', NE:'CO IA KS MO SD WY', NV:'AZ CA ID OR UT', NH:'MA ME VT', NJ:'DE NY PA', NM:'AZ CO OK TX', NY:'CT MA NJ PA VT', NC:'GA SC TN VA', ND:'MN MT SD', OH:'IN KY MI PA WV', OK:'AR CO KS MO NM TX', OR:'CA ID NV WA', PA:'DE MD NJ NY OH WV', RI:'CT MA', SC:'GA NC', SD:'IA MN MT ND NE WY', TN:'AL AR GA KY MS MO NC VA', TX:'AR LA NM OK', UT:'AZ CO ID NV WY', VT:'MA NH NY', VA:'KY MD NC TN WV', WA:'ID OR', WV:'KY MD OH PA VA', WI:'IA IL MI MN', WY:'CO ID MT NE SD UT'
 };
 for (const s in borders) borders[s] = borders[s].split(' ').filter(Boolean);
-export const FOOD_START=100, FOOD_MAX=140, FOOD_PER_DAY=3; // shared rations; run out and injuries hit twice as hard
+export let FOOD_START=50, FOOD_MAX=100, FOOD_PER_DAY=3; // shared rations; run out and injuries hit twice as hard
+export let MONEY_START=250; // lean on purpose: the first setbacks should already cost something
 // A route may start from any mainland state (AK/HI have no road connection) and must end in Oregon.
 export function validRoute(route) { return route.length>0 && borders[route[0]]?.length>0 && route.at(-1)==='OR' && new Set(route).size===route.length && route.every((s,i)=>!i || borders[route[i-1]]?.includes(s)); }
 // Good luck is streaky by design: the chance of a good encounter starts low, climbs with every
 // setback, and resets once one arrives. Busier states (more bills) climb more slowly.
 export const GOOD_START=0.1;
 export const goodStep=count=>0.4-0.2*Math.min(1,Math.sqrt(count/108)); // +40 points in quiet states, +20 in the busiest
+export function setStart(money,food){MONEY_START=money;FOOD_START=food;} // for balance experiments
 export function createGame(route) {
  if (!validRoute(route)) throw new Error('Select a continuous route to Oregon.');
- return {route:[...route],index:0,day:1,tick:0,money:650,food:FOOD_START,party:['Alex','Jamie','Morgan','Riley','Sam'].map(name=>({name,health:100})),status:'travel',seen:[],last:null,goodChance:GOOD_START};
+ return {route:[...route],index:0,day:1,tick:0,money:MONEY_START,food:FOOD_START,party:['Alex','Jamie','Morgan','Riley','Sam'].map(name=>({name,health:100})),status:'travel',seen:[],last:null,goodChance:GOOD_START};
 }
 export const living = g => g.party.filter(p=>p.health>0);
 export function applyOutcome(g, event, pay=false) {
@@ -43,11 +45,25 @@ export function delayLoss(g,event) {
  const money=rate?Math.min(g.money,Math.ceil(short*rate)):0;
  return {food,money,damage:Math.max(0,Math.ceil(short-(rate?money/rate:0)))};
 }
+// Rubber band: every trip should feel close. The party's condition is compared with a target that
+// declines over the trip; a party ahead of it draws more bad luck, a party behind it more good.
+export const TUNING={band:3,drop:0.55,floor:0.05,ceil:0.9,need:2,sev:3}; // tuned by seeded simulation; see README
+export const progress=g=>(g.index*4+g.tick)/(g.route.length*4);
+export function wellness(g){
+ const health=living(g).reduce((a,p)=>a+p.health,0)/(g.party.length*100);
+ return 0.7*health+0.15*Math.min(1,g.food/FOOD_START)+0.15*Math.min(1,g.money/MONEY_START);
+}
+// How far ahead of the target the party is (negative when behind).
+export const lead=g=>wellness(g)-(1-TUNING.drop*progress(g));
+export function goodOdds(g){
+ const rhythm=g.goodChance??GOOD_START;
+ return Math.min(Math.max(TUNING.ceil,rhythm),Math.max(TUNING.floor,rhythm-TUNING.band*lead(g))); // a long bad run still ends in a good turn
+}
 export function encounter(g,bills,random=Math.random) {
  const local=bills.filter(b=>b.state===g.route[g.index]);
  const chance=g.goodChance??GOOD_START;
- // States with no bills are always good; otherwise roll against the climbing good chance.
- if(local.length && random()<1-chance) {
+ // States with no bills are always good; otherwise roll against the climbing, rubber-banded good chance.
+ if(local.length && random()<1-goodOdds(g)) {
   g.goodChance=Math.min(1,chance+goodStep(local.length));
   const unseen=local.filter(b=>!g.seen.includes(b.url));
   const pool=unseen.length?unseen:local, bill=pool[Math.floor(random()*pool.length)];
@@ -55,11 +71,12 @@ export function encounter(g,bills,random=Math.random) {
   // Each bill's authored effect decides the outcome so the story matches the cost:
   // 'delay' costs time and supplies (food), 'all' injures the whole party, 'one' injures one traveler.
   const effect=bill.effect||(random()<0.35?'delay':random()<0.3?'all':'one');
-  if(effect==='delay') return {kind:'bill',bill,title:bill.summary,text:bill.description,mode:'delay',food:10+Math.floor(random()*17),cost:55+Math.floor(random()*56)};
+  const sev=Math.min(1.8,Math.max(0.6,1+TUNING.sev*lead(g))); // hits land harder on a party that's ahead, softer on one that's behind
+  if(effect==='delay') return {kind:'bill',bill,title:bill.summary,text:bill.description,mode:'delay',food:Math.round((10+Math.floor(random()*17))*sev),cost:55+Math.floor(random()*56)};
   const group=effect==='all', alive=g.party.map((p,i)=>p.health>0?i:-1).filter(i=>i>=0);
   const target=group?null:alive[Math.floor(random()*alive.length)];
   const text=group?bill.description:bill.description.replaceAll('{name}',g.party[target].name);
-  return {kind:'bill',bill,title:bill.summary,text,mode:'harm',damage:group?18+Math.floor(random()*18):35+Math.floor(random()*34),target,cost:70+Math.floor(random()*81)};
+  return {kind:'bill',bill,title:bill.summary,text,mode:'harm',damage:Math.round((group?18+Math.floor(random()*18):35+Math.floor(random()*34))*sev),target,cost:70+Math.floor(random()*81)};
  }
  g.goodChance=GOOD_START;
  const r=random(),pick=list=>{ // no repeats until every story for that resource has been told
@@ -67,8 +84,11 @@ export function encounter(g,bills,random=Math.random) {
   if(!fresh.length)g.goodSeen=g.goodSeen.filter(t=>!list.some(y=>y.title===t));
   (g.goodSeen||=[]).push(x.title);return x;
  };
- if(r<0.42) return {kind:'good',mode:'food',...pick(GOOD.food),foodGain:14+Math.floor(random()*19)};
- if(r<0.72) return {kind:'good',mode:'money',...pick(GOOD.money),gain:25+Math.floor(random()*46)};
+ // Good luck leans toward whatever the party is shortest of.
+ const alive=living(g),lack=[1-Math.min(1,g.food/FOOD_START),1-Math.min(1,g.money/MONEY_START),alive.length?1-alive.reduce((a,p)=>a+p.health,0)/(alive.length*100):0];
+ const w=[0.42,0.3,0.28].map((b,i)=>b*(1+TUNING.need*lack[i])),total=w[0]+w[1]+w[2];
+ if(r<w[0]/total) return {kind:'good',mode:'food',...pick(GOOD.food),foodGain:14+Math.floor(random()*19)};
+ if(r<(w[0]+w[1])/total) return {kind:'good',mode:'money',...pick(GOOD.money),gain:25+Math.floor(random()*46)};
  return {kind:'good',mode:'heal',...pick(GOOD.heal),heal:8+Math.floor(random()*9)};
 }
 // Mutual aid along the way, by the resource it restores.
