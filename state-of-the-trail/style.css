@@ -22,11 +22,11 @@
 html{background:var(--bg)}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'PixBody',monospace;font-size:20px;line-height:1.3;
  image-rendering:pixelated;-webkit-font-smoothing:none;text-shadow:1px 1px 0 var(--shadow)}
-/* CRT scanlines + vignette overlays */
+/* CRT scanlines + vignette overlays: kept faint so the small pixel text stays legible */
 body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
- background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 2px,transparent 2px 4px)}
+ background:repeating-linear-gradient(0deg,rgba(0,0,0,.06) 0 1px,transparent 1px 3px)}
 body::before{content:'';position:fixed;inset:0;z-index:9998;pointer-events:none;
- background:radial-gradient(120% 120% at 50% 40%,transparent 55%,rgba(0,0,0,.55) 100%)}
+ background:radial-gradient(120% 120% at 50% 40%,transparent 65%,rgba(0,0,0,.35) 100%)}
 main{max-width:1180px;padding:0 26px;margin:auto}
 h1,h2,h3{font-family:'PixHead',monospace;text-shadow:2px 2px 0 var(--shadow);font-weight:400}
 a{color:var(--amber)}
@@ -49,7 +49,7 @@ h1 em{color:var(--rust);font-style:normal}
 .masthead p{font-size:18px;color:var(--ink-dim);line-height:1.5;margin-bottom:0}
 .stamp{flex:none;width:150px;height:110px;display:flex;flex-direction:column;justify-content:center;text-align:center;
  border:3px solid var(--rust);background:repeating-linear-gradient(45deg,#2e2417 0 10px,#3a2414 10px 20px);
- box-shadow:5px 5px 0 var(--shadow);font-family:'PixHead',monospace;font-size:7px;letter-spacing:1px;color:var(--amber);line-height:2;transform:none;padding:6px}
+ box-shadow:5px 5px 0 var(--shadow);font-family:'PixHead',monospace;font-size:8px;letter-spacing:1px;color:var(--amber);line-height:2;transform:none;padding:6px}
 .stamp strong{font-size:20px;color:var(--rust);margin:4px 0}
 .steps{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;margin-bottom:4px;
  background:var(--sunk);border:3px solid var(--line);font-family:'PixHead',monospace;font-size:8px;letter-spacing:1px;color:var(--amber)}
@@ -74,7 +74,7 @@ h1 em{color:var(--rust);font-style:normal}
 .route-point{fill:var(--amber);stroke:var(--shadow);stroke-width:2;pointer-events:none}
 #map-tooltip{position:absolute;left:10px;bottom:10px;background:var(--sunk);color:var(--ink);border:2px solid var(--line);
  padding:8px 10px;font-size:16px;pointer-events:none;opacity:0;max-width:270px;line-height:1.3}
-.legend{display:flex;align-items:center;justify-content:center;gap:10px;font-family:'PixHead',monospace;font-size:7px;color:var(--ink-dim);margin-top:6px}
+.legend{display:flex;align-items:center;justify-content:center;gap:10px;font-family:'PixHead',monospace;font-size:8px;color:var(--ink-dim);margin-top:6px}
 .legend i{width:130px;height:9px;border:2px solid var(--line);background:linear-gradient(90deg,#3a3320,#a5622f,#c9432b)}
 .legend b{font-weight:400}
 .map-note{display:flex;gap:14px;justify-content:center;font-size:15px;color:var(--ink-dim);margin-top:14px;flex-wrap:wrap}
@@ -114,7 +114,7 @@ button:disabled{cursor:not-allowed;opacity:.45;box-shadow:none;transform:none}
 .travel-top h2{font-size:20px;margin:8px 0 0;color:var(--ink)}
 .readouts{margin-left:auto;display:flex;gap:10px}
 .readouts>div{background:var(--sunk);border:3px solid var(--line);padding:8px 12px;min-width:78px;text-align:center;
- font-family:'PixHead',monospace;font-size:7px;letter-spacing:1px;color:var(--ink-dim);box-shadow:3px 3px 0 var(--shadow)}
+ font-family:'PixHead',monospace;font-size:8px;letter-spacing:1px;color:var(--ink-dim);box-shadow:3px 3px 0 var(--shadow)}
 .readouts strong{display:block;font-family:'PixBody',monospace;font-size:26px;letter-spacing:0;margin-top:5px;color:var(--amber);text-shadow:1px 1px 0 var(--shadow)}
 .food-read strong{color:var(--toxic)}
 .food-read.starving strong{color:var(--rust);animation:blink 1s steps(2) infinite}
@@ -152,13 +152,13 @@ button:disabled{cursor:not-allowed;opacity:.45;box-shadow:none;transform:none}
 .van-top{position:absolute;left:10px;top:0;width:96px;height:38px;background:#b98a3c;border:3px solid var(--shadow);display:flex;padding:6px;gap:6px}
 .van-top i{width:34px;background:#6a7a6a;border:2px solid var(--shadow)}
 .van-body{position:absolute;bottom:10px;width:130px;height:34px;background:#b5502a;border:3px solid var(--shadow)}
-.van-body span{font-family:'PixHead',monospace;font-size:7px;position:absolute;top:11px;left:20px;color:#2a1206;text-shadow:none}
+.van-body span{font-family:'PixHead',monospace;font-size:8px;position:absolute;top:11px;left:20px;color:#2a1206;text-shadow:none}
 .wheel{position:absolute;bottom:0;width:24px;height:24px;border:6px solid #191510;background:#5a544a}
 .wheel.one{left:20px}.wheel.two{right:14px}
 .road-sign{position:absolute;right:11%;bottom:74px;background:var(--toxic);color:#1c2408;border:3px solid var(--shadow);
  font-family:'PixHead',monospace;font-size:8px;padding:8px 12px;z-index:1;text-shadow:none}
 .road-sign:after{content:'';position:absolute;width:5px;height:34px;background:#3a352b;left:50%;top:100%}
-.scene-caption{position:absolute;bottom:9px;left:14px;font-family:'PixHead',monospace;font-size:7px;letter-spacing:1px;z-index:2;color:#241c10}
+.scene-caption{position:absolute;bottom:9px;left:14px;font-family:'PixHead',monospace;font-size:8px;letter-spacing:1px;z-index:2;color:#241c10}
 .paused .road-scene *{animation-play-state:paused!important}
 
 /* ---- journey map ---- */
@@ -198,7 +198,7 @@ button:disabled{cursor:not-allowed;opacity:.45;box-shadow:none;transform:none}
 .event-panel p{font-size:18px;line-height:1.4}
 .news-masthead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:4px double var(--line);padding-bottom:9px}
 .news-name{font-family:'PixHead',monospace;font-size:11px;letter-spacing:1px;color:var(--ink);line-height:1.5}
-.news-date{font-family:'PixHead',monospace;font-size:7px;letter-spacing:1px;color:var(--ink-dim);white-space:nowrap}
+.news-date{font-family:'PixHead',monospace;font-size:8px;letter-spacing:1px;color:var(--ink-dim);white-space:nowrap}
 .news-eyebrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 9px;flex-wrap:wrap}
 .news-cat{display:inline-flex;align-items:center;gap:6px;font-family:'PixHead',monospace;font-size:8px;letter-spacing:.5px;color:#fff;background:var(--c);padding:5px 9px;border:2px solid var(--shadow)}
 .cat-icon{width:14px;height:14px;object-fit:contain;image-rendering:pixelated;filter:brightness(0) invert(1)}
