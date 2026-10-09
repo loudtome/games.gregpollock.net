@@ -1,5 +1,5 @@
-import {initScene,setScene,resetScene} from './scene.js?v=20261009d';
-import {borders,validRoute,createGame,living,encounter,applyOutcome,advance,delayLoss} from './engine.js?v=20261009d';
+import {initScene,setScene,resetScene} from './scene.js?v=20261009e';
+import {borders,validRoute,createGame,living,encounter,applyOutcome,advance,delayLoss} from './engine.js?v=20261009e';
 const $=id=>document.getElementById(id), NS='http://www.w3.org/2000/svg';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Deterministic color per issue category, so the same category always shows the same label color.
@@ -101,6 +101,7 @@ function renderRoute(){
 function showEvent(){
  pending=encounter(game,data.bills);clearTimeout(timer);document.body.classList.add('paused');
  const e=pending,state=data.names[game.route[game.index]];
+ pendingMark();
  if(e.kind==='bill'){
   const b=e.bill,harm=e.mode==='harm',poor=game.money<e.cost,unit=harm?'health':'rations';
   const dbl=harm&&game.food<=0?2:1; // out of rations doubles the injury, so show the real number
@@ -123,13 +124,20 @@ function showEvent(){
 function log(text){const n=document.createElement('div');n.className='log-entry';n.innerHTML=`<span>DAY ${game.day} · ${game.route[game.index]}</span>${text}`;$('log').prepend(n);}
 // One icon per encounter along the progress bar, showing the worst thing that happened.
 const MARKS={good:['❤️','Something good'],death:['🪦','A traveler died'],health:['🤕','Lost health'],food:['🍗','Lost rations'],money:['💸','Lost money']};
+// The icon sits at the end of the encounter's day. It appears as ⁉️ with the encounter, and the bar
+// reaches it then; once the player decides, it becomes the outcome.
+function pendingMark(){
+ const at=(game.index*4+game.tick+1)/(game.route.length*4)*100;
+ const n=document.createElement('span');n.className='mark pending';n.style.left=at+'%';n.textContent='⁉️';n.title='Encounter in progress';
+ $('progress-marks').append(n);$('progress-bar').style.width=at+'%';
+}
 function mark(e,pay,deaths){
  const l=game.last.loss;
  const kind=e.kind==='good'?'good':deaths.length?'death':pay?'money':e.mode==='harm'||l.damage?'health':l.food?'food':l.money?'money':'food';
- const [icon,label]=MARKS[kind],at=(game.index*4+game.tick+0.5)/(game.route.length*4)*100;
- const n=document.createElement('span');n.className='mark';n.style.left=at+'%';n.textContent=icon;
+ const [icon,label]=MARKS[kind],n=$('progress-marks').querySelector('.pending');
+ if(!n)return;
+ n.className='mark';n.textContent=icon;
  n.title=`Day ${game.day} · ${data.names[game.route[game.index]]}: ${deaths.length?deaths.join(', ')+' died':label}`;n.setAttribute('aria-label',n.title);
- $('progress-marks').append(n);
 }
 function resolve(pay){
  if(!pending)return;
@@ -197,14 +205,14 @@ function renderTravel(){
  }).join('');
 }
 function schedule(){clearTimeout(timer);document.body.classList.toggle('paused',paused);if(!paused&&game?.status==='travel')timer=setTimeout(showEvent,2300);}
-function start(){game=createGame(route);resetScene();paused=false;$('planner').hidden=true;$('travel').hidden=false;$('ending').hidden=true;$('log').replaceChildren();$('progress-marks').replaceChildren();buildJourneyMap();$('steps').hidden=true;$('step-label').textContent='02 / THE JOURNEY';$('phase-label').textContent='ONE STATE AT A TIME';$('pause').textContent='Pause';log(`Five travelers set out from ${esc(data.names[route[0]])} with $650 and 100 rations.`);renderTravel();schedule();$('travel').scrollIntoView({behavior:'smooth',block:'start'});}
-function finish(){clearTimeout(timer);document.body.classList.add('paused');$('pause').disabled=true;$('ending').hidden=false;const won=game.status==='won';if(won)$('progress-bar').style.width='100%';$('step-label').textContent='03 / THE END OF THE ROAD';$('phase-label').textContent=won?'YOU MADE IT WEST':'REMEMBER YOUR TRAVELERS';$('ending').innerHTML=`<div class="eyebrow">${won?'WELCOME TO OREGON':'THE TRAIL ENDS HERE'}</div><h2>${won?'You made it west.':'No one made it home.'}</h2><p>${won?`${living(game).length} of your five travelers reached Oregon after ${game.route.length*4} days.`:`Your last traveler died in ${esc(data.names[game.route[game.index]])} on day ${game.day}.`}<br>$${game.money} remaining · ${game.food} rations · ${game.seen.length} legislation encounters</p><p>${game.party.map(p=>`${p.name}: ${p.health?'survived with '+p.health+' health':'died'}`).join(' · ')}</p><button class="primary" id="again">Chart another course →</button>`;$('again').onclick=()=>{game=null;route=[];$('travel').hidden=true;$('ending').hidden=true;$('planner').hidden=false;$('pause').disabled=false;$('steps').hidden=false;$('step-label').textContent='01 / CHART YOUR COURSE';$('phase-label').textContent='THE ROAD AHEAD IS YOURS TO CHOOSE';renderRoute();$('planner').scrollIntoView({behavior:'smooth'});};$('ending').scrollIntoView({behavior:'smooth',block:'center'});}
+function start(){game=createGame(route);resetScene();paused=false;$('planner').hidden=true;$('travel').hidden=false;$('ending').hidden=true;$('log').replaceChildren();$('progress-marks').replaceChildren();buildJourneyMap();$('steps').hidden=true;$('step-label').textContent='THE JOURNEY';$('phase-label').textContent='ONE STATE AT A TIME';$('pause').textContent='Pause';log(`Five travelers set out from ${esc(data.names[route[0]])} with $650 and 100 rations.`);renderTravel();schedule();$('travel').scrollIntoView({behavior:'smooth',block:'start'});}
+function finish(){clearTimeout(timer);document.body.classList.add('paused');$('pause').disabled=true;$('ending').hidden=false;const won=game.status==='won';if(won)$('progress-bar').style.width='100%';$('step-label').textContent='THE END OF THE ROAD';$('phase-label').textContent=won?'YOU MADE IT WEST':'REMEMBER YOUR TRAVELERS';$('ending').innerHTML=`<div class="eyebrow">${won?'WELCOME TO OREGON':'THE TRAIL ENDS HERE'}</div><h2>${won?'You made it west.':'No one made it home.'}</h2><p>${won?`${living(game).length} of your five travelers reached Oregon after ${game.route.length*4} days.`:`Your last traveler died in ${esc(data.names[game.route[game.index]])} on day ${game.day}.`}<br>$${game.money} remaining · ${game.food} rations · ${game.seen.length} legislation encounters</p><p>${game.party.map(p=>`${p.name}: ${p.health?'survived with '+p.health+' health':'died'}`).join(' · ')}</p><button class="primary" id="again">Chart another course →</button>`;$('again').onclick=()=>{game=null;route=[];$('travel').hidden=true;$('ending').hidden=true;$('planner').hidden=false;$('pause').disabled=false;$('steps').hidden=false;$('step-label').textContent='CHART YOUR COURSE';$('phase-label').textContent='THE ROAD AHEAD IS YOURS TO CHOOSE';renderRoute();$('planner').scrollIntoView({behavior:'smooth'});};$('ending').scrollIntoView({behavior:'smooth',block:'center'});}
 initScene($('road-scene'));
 $('undo').onclick=()=>{if(route.length)route.pop();renderRoute();};$('clear').onclick=()=>{route=[];renderRoute();};$('depart').onclick=start;
 $('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'Resume':'Pause';schedule();};
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&game?.status==='travel'&&!pending){paused=true;$('pause').textContent='Resume';schedule();}});
 try{
- const responses=await Promise.all([fetch('./data/bills.json?v=20261009d'),fetch('./data/states-albers-10m.json')]);
+ const responses=await Promise.all([fetch('./data/bills.json?v=20261009e'),fetch('./data/states-albers-10m.json')]);
  if(responses.some(r=>!r.ok))throw new Error('A game data file could not be loaded.');
  [data,topology]=await Promise.all(responses.map(r=>r.json()));
  for(const b of data.bills)counts[b.state]=(counts[b.state]||0)+1;
