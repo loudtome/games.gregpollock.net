@@ -167,7 +167,7 @@ button:disabled{cursor:not-allowed;opacity:.45;box-shadow:none;transform:none}
 .wheel{position:absolute;bottom:0;width:24px;height:24px;border:6px solid #191510;background:#5a544a}
 .wheel.one{left:20px}.wheel.two{right:14px}
 .scene-caption{position:absolute;bottom:9px;left:14px;font-family:'PixHead',monospace;font-size:8px;letter-spacing:1px;z-index:2;color:#241c10}
-.paused .road-scene *{animation-play-state:paused!important}
+.paused .road-scene *,.paused .road-scene *::after{animation-play-state:paused!important} /* ::after carries the road markings */
 
 /* ---- journey map ---- */
 #journey-map-wrap{border:3px solid var(--line);background:var(--sunk);padding:12px;position:relative;overflow:hidden;box-shadow:5px 5px 0 var(--shadow)}
