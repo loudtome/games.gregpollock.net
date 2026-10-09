@@ -1,5 +1,5 @@
-import {initScene,setScene,resetScene} from './scene.js?v=20261009e';
-import {borders,validRoute,createGame,living,encounter,applyOutcome,advance,delayLoss} from './engine.js?v=20261009e';
+import {initScene,setScene,resetScene} from './scene.js?v=20261009f';
+import {borders,validRoute,createGame,living,encounter,applyOutcome,advance,delayLoss} from './engine.js?v=20261009f';
 const $=id=>document.getElementById(id), NS='http://www.w3.org/2000/svg';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Deterministic color per issue category, so the same category always shows the same label color.
@@ -212,7 +212,7 @@ $('undo').onclick=()=>{if(route.length)route.pop();renderRoute();};$('clear').on
 $('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'Resume':'Pause';schedule();};
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&game?.status==='travel'&&!pending){paused=true;$('pause').textContent='Resume';schedule();}});
 try{
- const responses=await Promise.all([fetch('./data/bills.json?v=20261009e'),fetch('./data/states-albers-10m.json')]);
+ const responses=await Promise.all([fetch('./data/bills.json?v=20261009f'),fetch('./data/states-albers-10m.json')]);
  if(responses.some(r=>!r.ok))throw new Error('A game data file could not be loaded.');
  [data,topology]=await Promise.all(responses.map(r=>r.json()));
  for(const b of data.bills)counts[b.state]=(counts[b.state]||0)+1;

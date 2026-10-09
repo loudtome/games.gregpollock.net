@@ -62,11 +62,51 @@ export function encounter(g,bills,random=Math.random) {
   return {kind:'bill',bill,title:bill.summary,text,mode:'harm',damage:group?18+Math.floor(random()*18):35+Math.floor(random()*34),target,cost:70+Math.floor(random()*81)};
  }
  g.goodChance=GOOD_START;
- const r=random();
- if(r<0.42) return {kind:'good',mode:'food',title:'Full pantry, open door',text:'Roadside growers wave you over and load a crate of food into the van.',foodGain:14+Math.floor(random()*19)};
- if(r<0.72) return {kind:'good',mode:'money',title:'Kindness at the crossroads',text:'Neighbors collect a travel fund for your party. The road feels a little less lonely.',gain:25+Math.floor(random()*46)};
- return {kind:'good',mode:'heal',title:'A little help along the way',text:'A local mutual-aid group shares a hot meal and a place to rest.',heal:8+Math.floor(random()*9)};
+ const r=random(),pick=list=>{ // no repeats until every story for that resource has been told
+  const fresh=list.filter(x=>!g.goodSeen?.includes(x.title)),pool=fresh.length?fresh:list,x=pool[Math.floor(random()*pool.length)];
+  if(!fresh.length)g.goodSeen=g.goodSeen.filter(t=>!list.some(y=>y.title===t));
+  (g.goodSeen||=[]).push(x.title);return x;
+ };
+ if(r<0.42) return {kind:'good',mode:'food',...pick(GOOD.food),foodGain:14+Math.floor(random()*19)};
+ if(r<0.72) return {kind:'good',mode:'money',...pick(GOOD.money),gain:25+Math.floor(random()*46)};
+ return {kind:'good',mode:'heal',...pick(GOOD.heal),heal:8+Math.floor(random()*9)};
 }
+// Mutual aid along the way, by the resource it restores.
+const good=pairs=>pairs.map(([title,text])=>({title,text}));
+export const GOOD={
+ food:good([
+  ['Full pantry, open door','Roadside growers wave you over and load a crate of food into the van.'],
+  ['Take what you need','A painted fridge outside a laundromat says TAKE WHAT YOU NEED. The party takes what it needs.'],
+  ['Church basement potluck','The potluck has more casseroles than people. The party leaves with three foil pans.'],
+  ['No questions asked','The food bank volunteers don\'t ask for ID or a reason. They ask how many people, and pack for five.'],
+  ['End of the harvest shift','Farmworkers coming off a shift hand over a box of seconds: bruised peaches, split tomatoes, plenty.'],
+  ['Tamales for the road','A family selling tamales from a cooler won\'t take money from travelers. Two dozen, still warm.'],
+  ['The garden overflows','A community gardener fills a grocery bag with squash and tells the party to come back next year.'],
+  ['Thursday at the union hall','The union hall\'s Thursday dinner is open to anyone. The party eats, and leaves with leftovers.'],
+  ['Little free pantry','A wooden box at the end of a driveway holds canned beans and peanut butter. The note says: for whoever needs it.'],
+  ['Open iftar','The mosque\'s evening meal is open to travelers. The party is fed, and then fed again.']
+ ]),
+ money:good([
+  ['Kindness at the crossroads','Neighbors collect a travel fund for your party. The road feels a little less lonely.'],
+  ['Mutual aid network','A local mutual aid network covers the party\'s gas. The only paperwork is a thumbs-up emoji.'],
+  ['Pass the hat','The band at the diner passes the hat for the travelers and hands it over full.'],
+  ['The tip jar','The bartender empties the night\'s tip jar into the party\'s hands. Somebody did it for her once.'],
+  ['Paid at the pump','A stranger at the next pump pays for the fill-up and drives off before anyone can say thanks.'],
+  ['Strike fund','Retired teachers running a strike fund decide the party counts. They write a check.'],
+  ['An honest day\'s pay','A farmer pays the party cash for an afternoon of fence repair, and rounds up.'],
+  ['Garage sale','A block-wide garage sale gives the day\'s take to travelers passing through.']
+ ]),
+ heal:good([
+  ['A little help along the way','A local mutual-aid group shares a hot meal and a place to rest.'],
+  ['Clinic in a van','A volunteer nurse runs a free clinic out of a church van. Everyone is checked, bandaged and sent off with ibuprofen.'],
+  ['Spare rooms','A family with spare bedrooms takes the party in for a night of real beds and hot showers.'],
+  ['Street medics','Street medics with supplies to spare clean every scrape and restock the first aid kit.'],
+  ['Shared fire','The next campsite over shares a fire, a pot of soup and a long night\'s sleep.'],
+  ['At cost','An independent pharmacist fills the party\'s prescriptions at cost and covers the rest.'],
+  ['A day off the road','A retired couple lets the party park in their yard. Nobody drives anywhere for a whole day.'],
+  ['The bunk room','The volunteer fire department lets the party sleep in the station bunk room and makes them breakfast.']
+ ])
+};
 export function advance(g) {
  if(g.status!=='travel') return;
  g.day++; g.tick++; g.food=Math.max(0,g.food-FOOD_PER_DAY); // the party eats a little every day on the road

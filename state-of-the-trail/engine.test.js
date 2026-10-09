@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {borders,validRoute,createGame,encounter,applyOutcome,advance,living,delayLoss,FOOD_MAX,GOOD_START} from './engine.js';
+import {borders,validRoute,createGame,encounter,applyOutcome,advance,living,delayLoss,FOOD_MAX,GOOD_START,GOOD} from './engine.js';
 const data=JSON.parse(fs.readFileSync(new URL('./data/bills.json',import.meta.url)));
 const route=['FL','AL','MS','LA','TX','NM','AZ','CA','OR'];
 test('all 50 states and reciprocal shared borders; no corner-only crossings',()=>{
@@ -56,6 +56,17 @@ test('good luck climbs with each setback and resets after a good turn, so bad ru
  assert.equal(g.goodChance,GOOD_START); // the good turn reset it
  for(let i=0;i<20;i++)encounter(g,data.bills,()=>0); // worst possible luck still yields a good turn eventually
  assert.ok(g.goodChance<1);
+});
+test('good encounters vary and don\'t repeat until the pool for that resource is used up',()=>{
+ for(const [mode,list] of Object.entries(GOOD)){
+  assert.ok(list.length>=8,mode);
+  for(const x of list)assert.ok(x.title&&x.text.split(/\s+/).length<=30,x.title);
+  const g=createGame(route);const seen=new Set();let i=0; // with no bills, every encounter is good
+  const r=mode==='food'?0.1:mode==='money'?0.5:0.9,rand=()=>(i++?Math.random():r); // first roll picks the resource
+  for(let n=0;n<list.length;n++){i=0;const e=encounter(g,[],rand);assert.equal(e.mode,mode==='heal'?'heal':mode);seen.add(e.title);}
+  assert.equal(seen.size,list.length,mode);
+  i=0;assert.ok(encounter(g,[],rand).title); // then the pool starts over
+ }
 });
 test('deaths persist, funds cannot go negative, mitigation works',()=>{
  const g=createGame(route);g.party[0].health=10;
