@@ -44,7 +44,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;pa
 .edition{color:var(--ink-dim)}
 .masthead{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:34px 0 26px}
 .eyebrow{font-family:'PixHead',monospace;font-size:9px;letter-spacing:1px;color:var(--rust);line-height:1.8}
-h1{font-size:clamp(20px,4vw,40px);line-height:1.15;letter-spacing:1px;margin:16px 0;color:var(--ink)}
+h1{font-size:clamp(18px,4vw,40px);white-space:nowrap;line-height:1.15;letter-spacing:1px;margin:16px 0;color:var(--ink)}
 h1 em{color:var(--rust);font-style:normal}
 .masthead p{font-size:18px;color:var(--ink-dim);line-height:1.5;margin-bottom:0}
 .stamp{flex:none;width:150px;height:110px;display:flex;flex-direction:column;justify-content:center;text-align:center;
@@ -118,6 +118,9 @@ button:disabled{cursor:not-allowed;opacity:.45;box-shadow:none;transform:none}
 .readouts strong{display:block;font-family:'PixBody',monospace;font-size:26px;letter-spacing:0;margin-top:5px;color:var(--amber);text-shadow:1px 1px 0 var(--shadow)}
 .food-read strong{color:var(--toxic)}
 .food-read.starving strong{color:var(--rust);animation:blink 1s steps(2) infinite}
+#progress-marks{position:relative;height:22px;margin-bottom:2px}
+#progress-marks .mark{position:absolute;bottom:0;transform:translateX(-50%);font-size:15px;line-height:1;cursor:default;text-shadow:none;filter:drop-shadow(1px 1px 0 var(--shadow))}
+@media(max-width:700px){#progress-marks .mark{font-size:10px}}
 #progress-track{height:16px;background:var(--sunk);border:3px solid var(--line);padding:2px}
 #progress-bar{height:100%;background:repeating-linear-gradient(90deg,var(--rust) 0 8px,#a3371f 8px 12px);transition:width .4s steps(8)}
 #travel-route{padding:10px 0;font-size:15px;color:var(--ink-dim);line-height:1.9;letter-spacing:1px}
@@ -258,7 +261,7 @@ footer a{color:var(--amber)}
 @media(max-width:560px){
  body{font-size:18px}
  header .edition,.steps span+span{display:none}
- h1{font-size:20px}
+ h1{font-size:min(20px,5vw)}
  .readouts>div{min-width:64px;padding:6px 8px}
  .readouts strong{font-size:20px}
  .stamp{width:120px;height:90px}

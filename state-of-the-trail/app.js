@@ -116,6 +116,16 @@ function showEvent(){
  $('event').classList.add('open');
 }
 function log(text){const n=document.createElement('div');n.className='log-entry';n.innerHTML=`<span>DAY ${game.day} · ${game.route[game.index]}</span>${text}`;$('log').prepend(n);}
+// One icon per encounter along the progress bar, showing the worst thing that happened.
+const MARKS={good:['❤️','Something good'],death:['🪦','A traveler died'],health:['🤕','Lost health'],food:['🍗','Lost rations'],money:['💸','Lost money']};
+function mark(e,pay,deaths){
+ const l=game.last.loss;
+ const kind=e.kind==='good'?'good':deaths.length?'death':pay?'money':e.mode==='harm'||l.damage?'health':l.food?'food':l.money?'money':'food';
+ const [icon,label]=MARKS[kind],at=(game.index*4+game.tick+0.5)/(game.route.length*4)*100;
+ const n=document.createElement('span');n.className='mark';n.style.left=at+'%';n.textContent=icon;
+ n.title=`Day ${game.day} · ${data.names[game.route[game.index]]}: ${deaths.length?deaths.join(', ')+' died':label}`;n.setAttribute('aria-label',n.title);
+ $('progress-marks').append(n);
+}
 function resolve(pay){
  if(!pending)return;
  const e=pending,deaths=applyOutcome(game,e,pay),starved=game.last.starving;pending=null;$('event').classList.remove('open');
@@ -125,6 +135,7 @@ function resolve(pay){
   else log(pay?`${link} — Paid $${e.cost} to avoid the delay.`:`${link} — Delays cost ${[game.last.loss.food?`${game.last.loss.food} rations`:'',game.last.loss.money?`$${game.last.loss.money}`:'',game.last.loss.damage?`${game.last.loss.damage} health for every survivor`:''].filter(Boolean).join(', ')||'nothing'}.`);
  }else log(`${e.title}. ${e.mode==='food'?`Gained ${e.foodGain} rations.`:e.mode==='money'?`Received $${e.gain}.`:`Survivors recovered up to ${e.heal} health.`}`);
  if(deaths.length)log(`<strong>${deaths.map(esc).join(', ')} ${deaths.length===1?'has':'have'} died on the trail.</strong>`);
+ mark(e,pay,deaths);
  advance(game);renderTravel();
  if(game.status!=='travel')finish();else schedule();
 }
@@ -181,8 +192,8 @@ function renderTravel(){
  }).join('');
 }
 function schedule(){clearTimeout(timer);document.body.classList.toggle('paused',paused);if(!paused&&game?.status==='travel')timer=setTimeout(showEvent,2300);}
-function start(){game=createGame(route);paused=false;$('planner').hidden=true;$('travel').hidden=false;$('ending').hidden=true;$('log').replaceChildren();buildJourneyMap();$('step-label').textContent='02 / THE JOURNEY';$('phase-label').textContent='ONE STATE AT A TIME';$('pause').textContent='Pause';log(`Five travelers set out from ${esc(data.names[route[0]])} with $650 and 100 rations.`);renderTravel();schedule();$('travel').scrollIntoView({behavior:'smooth',block:'start'});}
-function finish(){clearTimeout(timer);document.body.classList.add('paused');$('pause').disabled=true;$('ending').hidden=false;const won=game.status==='won';if(won)$('progress-bar').style.width='100%';$('step-label').textContent='03 / THE END OF THE ROAD';$('phase-label').textContent=won?'YOU MADE IT WEST':'REMEMBER YOUR TRAVELERS';$('ending').innerHTML=`<div class="eyebrow">${won?'WELCOME TO OREGON':'THE TRAIL ENDS HERE'}</div><h2>${won?'You made it west.':'No one made it home.'}</h2><p>${won?`${living(game).length} of your five travelers reached Oregon after ${game.route.length*4} days.`:`Your last traveler died in ${esc(data.names[game.route[game.index]])} on day ${game.day}.`}<br>$${game.money} remaining · ${game.food} rations · ${game.seen.length} legislation encounters</p><p>${game.party.map(p=>`${p.name}: ${p.health?'survived with '+p.health+' health':'died'}`).join(' · ')}</p><button class="primary" id="again">Chart another course →</button>`;$('again').onclick=()=>{game=null;route=[];$('travel').hidden=true;$('ending').hidden=true;$('planner').hidden=false;$('pause').disabled=false;$('step-label').textContent='01 / CHART YOUR COURSE';$('phase-label').textContent='THE ROAD AHEAD IS YOURS TO CHOOSE';renderRoute();$('planner').scrollIntoView({behavior:'smooth'});};$('ending').scrollIntoView({behavior:'smooth',block:'center'});}
+function start(){game=createGame(route);paused=false;$('planner').hidden=true;$('travel').hidden=false;$('ending').hidden=true;$('log').replaceChildren();$('progress-marks').replaceChildren();buildJourneyMap();$('steps').hidden=true;$('step-label').textContent='02 / THE JOURNEY';$('phase-label').textContent='ONE STATE AT A TIME';$('pause').textContent='Pause';log(`Five travelers set out from ${esc(data.names[route[0]])} with $650 and 100 rations.`);renderTravel();schedule();$('travel').scrollIntoView({behavior:'smooth',block:'start'});}
+function finish(){clearTimeout(timer);document.body.classList.add('paused');$('pause').disabled=true;$('ending').hidden=false;const won=game.status==='won';if(won)$('progress-bar').style.width='100%';$('step-label').textContent='03 / THE END OF THE ROAD';$('phase-label').textContent=won?'YOU MADE IT WEST':'REMEMBER YOUR TRAVELERS';$('ending').innerHTML=`<div class="eyebrow">${won?'WELCOME TO OREGON':'THE TRAIL ENDS HERE'}</div><h2>${won?'You made it west.':'No one made it home.'}</h2><p>${won?`${living(game).length} of your five travelers reached Oregon after ${game.route.length*4} days.`:`Your last traveler died in ${esc(data.names[game.route[game.index]])} on day ${game.day}.`}<br>$${game.money} remaining · ${game.food} rations · ${game.seen.length} legislation encounters</p><p>${game.party.map(p=>`${p.name}: ${p.health?'survived with '+p.health+' health':'died'}`).join(' · ')}</p><button class="primary" id="again">Chart another course →</button>`;$('again').onclick=()=>{game=null;route=[];$('travel').hidden=true;$('ending').hidden=true;$('planner').hidden=false;$('pause').disabled=false;$('steps').hidden=false;$('step-label').textContent='01 / CHART YOUR COURSE';$('phase-label').textContent='THE ROAD AHEAD IS YOURS TO CHOOSE';renderRoute();$('planner').scrollIntoView({behavior:'smooth'});};$('ending').scrollIntoView({behavior:'smooth',block:'center'});}
 $('undo').onclick=()=>{if(route.length)route.pop();renderRoute();};$('clear').onclick=()=>{route=[];renderRoute();};$('depart').onclick=start;
 $('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'Resume':'Pause';schedule();};
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&game?.status==='travel'&&!pending){paused=true;$('pause').textContent='Resume';schedule();}});
