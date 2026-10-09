@@ -16,6 +16,17 @@
       "state-of-the-trail/engine.test.js",
       "state-of-the-trail/package.json",
       "state-of-the-trail/README.md"
+    ],
+    "headers": [
+      {
+        "source": "state-of-the-trail/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      }
     ]
   }
 }

@@ -1,4 +1,4 @@
-import {borders,validRoute,createGame,living,encounter,applyOutcome,advance,delayLoss} from './engine.js';
+import {borders,validRoute,createGame,living,encounter,applyOutcome,advance,delayLoss} from './engine.js?v=20261009b';
 const $=id=>document.getElementById(id), NS='http://www.w3.org/2000/svg';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Deterministic color per issue category, so the same category always shows the same label color.
@@ -47,6 +47,7 @@ function decodeMap(){
   paths[code].addEventListener('mouseleave',()=>{$('map-tooltip').style.opacity=0;});paths[code].addEventListener('blur',()=>{$('map-tooltip').style.opacity=0;});
   paths[code].addEventListener('click',()=>select(code));paths[code].addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select(code);}});
  }
+ svg('g',{id:'state-outlines'}); // highlight outlines sit above every state, so neighbours can't paint over them
  svg('g',{id:'route-overlay'});
  const offset={RI:[39,10],CT:[33,23],NJ:[35,12],DE:[37,21],MD:[40,35],MA:[37,-8]};
  for(const [code,point] of Object.entries(centers)){
@@ -84,6 +85,9 @@ function renderRoute(){
   paths[code].setAttribute('class',`state ${selected?'selected':''} ${available?'available':''}`);
   paths[code].setAttribute('aria-pressed',String(selected));labels[code].setAttribute('class',`state-label ${selected?'chosen':''}`);
  }
+ $('state-outlines').replaceChildren();
+ for(const cls of ['available','selected'])for(const code of Object.keys(paths)) // the route draws over the options
+  if(paths[code].classList.contains(cls))svg('path',{d:paths[code].getAttribute('d'),class:`outline ${cls}`},$('state-outlines'));
  $('route-overlay').replaceChildren();
  svg('polyline',{points:route.map(s=>centers[s].join(',')).join(' '),class:'route-line'},$('route-overlay'));
  for(const code of route)svg('circle',{cx:centers[code][0],cy:centers[code][1],r:4,class:'route-point'},$('route-overlay'));
@@ -198,7 +202,7 @@ $('undo').onclick=()=>{if(route.length)route.pop();renderRoute();};$('clear').on
 $('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'Resume':'Pause';schedule();};
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&game?.status==='travel'&&!pending){paused=true;$('pause').textContent='Resume';schedule();}});
 try{
- const responses=await Promise.all([fetch('./data/bills.json'),fetch('./data/states-albers-10m.json')]);
+ const responses=await Promise.all([fetch('./data/bills.json?v=20261009b'),fetch('./data/states-albers-10m.json')]);
  if(responses.some(r=>!r.ok))throw new Error('A game data file could not be loaded.');
  [data,topology]=await Promise.all(responses.map(r=>r.json()));
  for(const b of data.bills)counts[b.state]=(counts[b.state]||0)+1;

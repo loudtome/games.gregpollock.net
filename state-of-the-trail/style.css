@@ -65,8 +65,9 @@ h1 em{color:var(--rust);font-style:normal}
 #map-wrap{position:relative;min-height:240px;margin:12px 0;background:var(--sunk);border:3px solid var(--sunk);padding:6px}
 #map{display:block;width:100%;overflow:visible}
 .state{stroke:var(--bg);stroke-width:1.2;cursor:pointer;transition:filter .1s steps(2)}
-.state.available{stroke:var(--amber);stroke-width:2.4;stroke-dasharray:5 3}
-.state.selected{stroke:var(--toxic);stroke-width:2.4}
+.outline{fill:none;pointer-events:none;stroke-linejoin:round}
+.outline.available{stroke:var(--amber);stroke-width:4}
+.outline.selected{stroke:var(--toxic);stroke-width:3}
 .state:hover,.state:focus{filter:brightness(1.3);stroke:var(--amber);stroke-width:3;outline:none}
 .state-label{font-family:'PixHead',monospace;font-size:9px;pointer-events:none;fill:var(--ink);paint-order:stroke;stroke:var(--shadow);stroke-width:3px;stroke-linejoin:round}
 .state-label.chosen{fill:var(--toxic)}
