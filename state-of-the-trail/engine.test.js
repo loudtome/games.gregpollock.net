@@ -26,8 +26,21 @@ test('every encounter has short authored text without immersion-breaking disclai
   assert.equal(typeof b.description,'string',b.summary);
   assert.ok(b.description.trim().length>0,b.summary);
   const sentences=[...segmenter.segment(b.description)].filter(s=>s.segment.trim());
-  assert.ok(sentences.length>=1&&sentences.length<=3,`${b.summary}: ${sentences.length} sentences`);
+  assert.ok(sentences.length>=1&&sentences.length<=4,`${b.summary}: ${sentences.length} sentences`);
+  assert.ok(b.description.split(/\s+/).length<=45,`${b.summary}: over 45 words`);
   assert.ok(!/\b(fictional|hypothetical|simulation)\b/i.test(b.description),b.summary);
+  assert.ok(['one','all','delay'].includes(b.effect),b.summary);
+  assert.equal(b.description.includes('{name}'),b.effect==='one',b.summary);
+ }
+});
+test('encounters follow the bill\'s authored effect and name the injured traveler',()=>{
+ for(const b of data.bills.slice(0,200)){
+  const g=createGame(route);g.party[0].health=0;
+  const e=encounter(g,[{...b,state:'FL'}],()=>0);
+  if(b.effect==='delay'){assert.equal(e.mode,'delay');assert.ok(e.food>0);}
+  else {assert.equal(e.mode,'harm');assert.equal(e.target,b.effect==='all'?null:1);}
+  assert.ok(!e.text.includes('{name}'));
+  if(b.effect==='one')assert.ok(e.text.includes('Jamie'),b.summary); // skips the dead traveler
  }
 });
 test('negative encounters always draw from the current state; empty states are positive',()=>{

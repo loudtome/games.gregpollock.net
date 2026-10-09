@@ -41,10 +41,14 @@ export function encounter(g,bills,random=Math.random) {
   const unseen=local.filter(b=>!g.seen.includes(b.url));
   const pool=unseen.length?unseen:local, bill=pool[Math.floor(random()*pool.length)];
   g.seen.push(bill.url);
-  // ~35% of setbacks cost time and supplies (food) rather than injuring a traveler (health).
-  if(random()<0.35) return {kind:'bill',bill,title:bill.summary,mode:'delay',food:10+Math.floor(random()*17),cost:55+Math.floor(random()*56)};
-  const group=random()<0.3, alive=g.party.map((p,i)=>p.health>0?i:-1).filter(i=>i>=0);
-  return {kind:'bill',bill,title:bill.summary,mode:'harm',damage:group?18+Math.floor(random()*18):35+Math.floor(random()*34),target:group?null:alive[Math.floor(random()*alive.length)],cost:70+Math.floor(random()*81)};
+  // Each bill's authored effect decides the outcome so the story matches the cost:
+  // 'delay' costs time and supplies (food), 'all' injures the whole party, 'one' injures one traveler.
+  const effect=bill.effect||(random()<0.35?'delay':random()<0.3?'all':'one');
+  if(effect==='delay') return {kind:'bill',bill,title:bill.summary,text:bill.description,mode:'delay',food:10+Math.floor(random()*17),cost:55+Math.floor(random()*56)};
+  const group=effect==='all', alive=g.party.map((p,i)=>p.health>0?i:-1).filter(i=>i>=0);
+  const target=group?null:alive[Math.floor(random()*alive.length)];
+  const text=group?bill.description:bill.description.replaceAll('{name}',g.party[target].name);
+  return {kind:'bill',bill,title:bill.summary,text,mode:'harm',damage:group?18+Math.floor(random()*18):35+Math.floor(random()*34),target,cost:70+Math.floor(random()*81)};
  }
  const r=random();
  if(r<0.42) return {kind:'good',mode:'food',title:'Full pantry, open door',text:'Roadside growers wave you over and load a crate of food into the van.',foodGain:14+Math.floor(random()*19)};

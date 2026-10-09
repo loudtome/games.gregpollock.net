@@ -23,7 +23,10 @@ for row in rows:
     identifier = re.search(r'(?:HB|SB|HCR|SCR|HJR|SJR|HD|SD)\d+', unquote(row['Bill (URL)']), re.I)
     description = row.get('Encounter Description', '').strip()
     assert description, f"Missing Encounter Description for {code}: {row['Summary']}"
-    bills.append(dict(state=code, description=description, summary=row['Summary'], category=row['Issue Category'], chamber=row['Chamber'], sponsor=row['Sponsor'], url=row['Bill (URL)'], bill=match[2].upper() if match else identifier[0].upper() if identifier else 'Proposal'))
+    effect = row.get('Encounter Effect', '').strip()
+    assert effect in ('one', 'all', 'delay'), f"Encounter Effect must be one, all, or delay for {code}: {row['Summary']}"
+    assert ('{name}' in description) == (effect == 'one'), f"Use {{name}} exactly when Encounter Effect is 'one' for {code}: {row['Summary']}"
+    bills.append(dict(state=code, description=description, effect=effect, summary=row['Summary'], category=row['Issue Category'], chamber=row['Chamber'], sponsor=row['Sponsor'], url=row['Bill (URL)'], bill=match[2].upper() if match else identifier[0].upper() if identifier else 'Proposal'))
 with p.open('w', encoding='utf-8-sig', newline='') as f:
     writer = csv.DictWriter(f, fields); writer.writeheader(); writer.writerows(rows)
 (ROOT / 'data' / 'bills.json').write_text(json.dumps(dict(names=names,bills=bills),ensure_ascii=False))

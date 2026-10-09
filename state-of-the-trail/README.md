@@ -28,13 +28,18 @@ No npm install, build step, API keys, or external runtime services are needed. T
 
 `Grid view.csv` is the supplied source with an added **State** column, derived from the first token of **Chamber**. All original columns and rows are retained. Nebraska's `NE` chamber maps directly to Nebraska. There are 1,182 entries. Counts are rows, not deduplicated bills; multiple entries may refer to the same proposal.
 
-The spreadsheet's summaries and issue labels are reproduced as supplied. Proposed legislation is not treated as enacted law. The game does not verify current bill status or independently rate legal risk. Encounters use individually written stories based on each summary and category; damage, death, probabilities, and mitigation costs are gameplay inventions, not factual assertions about specific bills.
+The spreadsheet's summaries and issue labels are reproduced as supplied. Proposed legislation is not treated as enacted law. The game does not verify current bill status or independently rate legal risk. Encounters use individually written stories based on each summary and category. They depict plausible worst-case consequences of a proposal, not reported events. Damage, death, probabilities, and mitigation costs are gameplay inventions, not factual assertions about specific bills.
 
 ### Editing encounter descriptions
 
-Edit the **Encounter Description** column in `Grid view.csv`. Each cell holds 1–3 sentences of plain text. Keep the headers unchanged, and let a spreadsheet editor handle quoting commas and line breaks. Original summaries remain in **Summary**; the new column is the narrative shown beneath the bill title.
+Each row has two authored columns in `Grid view.csv`:
 
-Every row has a description. Identical summary/category pairs initially share text, but you can edit any row independently. There are 902 distinct pairs across the 1,182 source entries. Six Luna batches of roughly 150 pairs produced the drafts; `writing/` retains those inputs and outputs for reference. Once merged, the CSV is the editable source of truth; ordinary rebuilds do not rerun or overwrite your descriptions with the draft files.
+- **Encounter Description**: 1–4 short sentences of plain text, at most 45 words, shown beneath the headline. It depicts the realistic worst-case consequence of the bill itself, in a deadpan register.
+- **Encounter Effect**: `one` (a single traveler is injured), `all` (every survivor is injured), or `delay` (the party loses rations). The engine uses this to pick the outcome, so the story always matches the cost shown.
+
+When the effect is `one`, the description must contain `{name}`. The game replaces it with the traveler who is hit. `{name}` must not appear for `all` or `delay`. Rows sharing a summary and category initially share text, which is why shared texts avoid place names specific to one state. You can edit any row independently.
+
+The current text comes from a v2 rewrite, kept in `writing/v2/`: `STYLE.md` is the writing guide, `REVIEW.md` the editorial pass, `input-*.json` and `output-*.json` the batches, and `merge.py` merges them into the CSV. `merge.py` overwrites every description and effect, so don't rerun it after hand edits to the CSV. The older v1 drafts remain in `writing/` for reference. The CSV is the source of truth.
 
 Regenerate the browser data after CSV changes:
 
@@ -42,7 +47,7 @@ Regenerate the browser data after CSV changes:
 python3 build_data.py
 ```
 
-The importer validates chamber codes against all 50 states and cross-checks the state against LegiScan URL paths or known official legislative domains. Unknown or mismatched states and missing descriptions fail the build. Add new official domains to the validation table when needed.
+The importer validates effects and `{name}` placeholders, plus chamber codes against all 50 states and cross-checks the state against LegiScan URL paths or known official legislative domains. Unknown or mismatched states, missing descriptions, and invalid effects fail the build. Add new official domains to the validation table when needed.
 
 ## Verification
 
